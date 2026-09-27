@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">QuickyAndroid</string>
+    <string name="bleservice_channel_name">Earbud connection</string>
+    <string name="bleservice_connected_to">Connected to %1$s</string>
+
+    <string name="widget_description">Shows your connected earbuds and battery levels</string>
+    <string name="widget_status_connected">Connected</string>
+    <string name="widget_status_connecting">Connecting…</string>
+    <string name="widget_status_disconnected">Not connected</string>
+    <string name="widget_label_left">LEFT</string>
+    <string name="widget_label_right">RIGHT</string>
+    <string name="widget_label_case">CASE</string>
+</resources>
