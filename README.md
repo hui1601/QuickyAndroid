@@ -13,6 +13,13 @@ Unofficial Android app for QCY earbuds, built with Kotlin + Jetpack Compose (Mat
 - **Device dashboard** — feature availability is derived from a bundled per-product catalog (`app/src/main/assets/android_products.json`, ~199 products with images):
   - Noise Control (ANC modes)
   - Equalizer (presets + custom multi-band, e.g. 10-band)
+  - **Custom Parametric EQ** — up to 20 bands with arbitrary frequency,
+    gain, Q and filter type (low-shelf / tilt / peaking / high-pass /
+    low-pass) plus pre-gain, written via DataBean cmd `0x22` with the
+    custom preset type. The firmware accepts far more than the fixed
+    presets the retail app ships (firmware “custom-band unlock”,
+    `catalog/EQ_PROTOCOL.md`); the section appears for standard-protocol
+    connections and can read the live curve back (`0xFE 0x22`).
   - Game Mode, Spatial Audio, LDAC, Adaptive EQ, Env Adaptation, Focus/Sleep Mode
   - Per-bud volume (L/R), LED indicator, LED effects
   - Wearing detection, Ear Tip Fit test
@@ -20,6 +27,22 @@ Unofficial Android app for QCY earbuds, built with Kotlin + Jetpack Compose (Mat
   - Key Controls — remap touch gestures per event
   - Find My Earphone — make a lost bud ring
   - Device Settings — product-specific toggles
+- **Hidden firmware features** (from the HT18 firmware RE workspace
+  `/data/reversing/qcy-ht18`):
+  - **Hearing Protection** toggle — WuQi sound cmds `0x20`/`0x22` (prefixes
+    `A1 5A`/`A1 F9`), parsed by the firmware but absent from the retail
+    control panel. Surfaced in Device Settings whenever the device exposes
+    the `0x7033`/`0x2001` diagnostics channel (WQ-family firmware registers
+    it alongside the standard service; the standard client attaches to it
+    opportunistically).
+  - Spatial-audio state is now also read back over that channel (`A1 59`),
+    where the DataBean `0xFE` sub-read is rejected by the firmware.
+  - Additional firmware-verified `0xFE` reads on connect/screen-refresh
+    (`0x17` ANC setting, `0x24` dual-device, `0x2A` wind noise, `0x46`/`0x47`
+    per-side EQ).
+  - **Developer console** — raw sender for any of the 38 firmware sound
+    commands (ID → prefix table in `WuqiSoundProtocol`), with live response
+    logging on `0x2002`.
 - **Home-screen widget** — persists and renders the last known connection + battery snapshot (`DeviceWidgetProvider`).
 - **Theming** — dark mode, dynamic color (Material You), M3 motion, Lottie animations, shared-element transitions between scan and dashboard.
 

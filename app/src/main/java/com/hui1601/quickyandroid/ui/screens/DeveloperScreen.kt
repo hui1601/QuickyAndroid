@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hui1601.quickyandroid.ble.WuqiSoundProtocol
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
 import com.hui1601.quickyandroid.util.Hex
 
@@ -67,6 +68,8 @@ fun DeveloperScreen(
     var rawCmd by remember { mutableStateOf("") }
     var rawParams by remember { mutableStateOf("") }
     var requestCmd by remember { mutableStateOf("") }
+    var soundCmdId by remember { mutableStateOf("") }
+    var soundParams by remember { mutableStateOf("") }
     var rawError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -186,6 +189,73 @@ fun DeveloperScreen(
                             }
                         }
                     ) { Text("Request") }
+                }
+            }
+            item {
+                SectionCard(title = "Hidden Sound Commands (0x2001)") {
+                    Text(
+                        text = "WuQi SoundProtocol3936 frames on the diagnostics characteristic. " +
+                            "Prefix table recovered from the HT18 firmware — 0x1F/0x20/0x21/0x22 " +
+                            "(spatial audio, hearing protection) are parsed by the firmware but " +
+                            "absent from the retail panel.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = {
+                            deviceViewModel.sendHiddenSoundCommand(0x1F, byteArrayOf())
+                        }) { Text("Spatial?") }
+                        OutlinedButton(onClick = {
+                            deviceViewModel.sendHiddenSoundCommand(0x20, byteArrayOf())
+                        }) { Text("Hearing?") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = soundCmdId,
+                        onValueChange = { soundCmdId = it; rawError = null },
+                        label = { Text("command id (hex)") },
+                        placeholder = { Text("22") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    val resolved = Hex.parseBytes(soundCmdId)
+                        ?.firstOrNull()
+                        ?.let { WuqiSoundProtocol.commandById(it.toInt() and 0xFF) }
+                    resolved?.let { cmd ->
+                        Text(
+                            text = "prefix ${Hex.format(cmd.prefix)} — ${cmd.name ?: "unknown (catalog id 0x%02x)".format(cmd.id)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = soundParams,
+                        onValueChange = { soundParams = it; rawError = null },
+                        label = { Text("payload (hex, optional)") },
+                        placeholder = { Text("01") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    rawError?.let {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            val cmd = Hex.parseBytes(soundCmdId)
+                            val params = Hex.parseBytes(soundParams)
+                            when {
+                                soundCmdId.isBlank() -> rawError = "command id required"
+                                cmd == null || cmd.size != 1 -> rawError = "command id must be one hex byte"
+                                params == null -> rawError = "payload must be hex byte pairs"
+                                else -> deviceViewModel.sendHiddenSoundCommand(cmd[0].toInt() and 0xFF, params)
+                            }
+                        }
+                    ) { Text("Send frame") }
                 }
             }
 

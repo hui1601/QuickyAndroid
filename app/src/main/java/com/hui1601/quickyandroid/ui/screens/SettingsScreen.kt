@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MusicNote
@@ -106,6 +107,7 @@ fun SettingsScreen(
     val hasInEarDetection = true
     val hasLdac = settingCmdIds.contains(0x23)
     val hasSpatial = settingCmdIds.contains(0x2D)
+    val hasHearingProtection by deviceViewModel.hiddenSoundChannel.collectAsState()
     val hasAdaptiveEq = settingCmdIds.contains(0x27)
     val hasEnvAdapt = settingCmdIds.contains(0x32)
     val hasCustomEqTest = settingCmdIds.contains(0x45)
@@ -210,6 +212,20 @@ fun SettingsScreen(
                         label = "Spatial Audio",
                         checked = settings.spatialAudio,
                         onCheckedChange = { deviceViewModel.setSpatialAudio(it) }
+                    )
+                }
+            }
+            if (hasHearingProtection) {
+                item {
+                    // Hidden feature: WuQi sound cmds 0x20/0x22 (A1 5A/F9) —
+                    // parsed by the firmware, absent from the retail panel
+                    // (catalog/hidden_features.md §2). Only shown when the
+                    // device exposes the 0x7033/0x2001 diagnostics channel.
+                    ToggleRow(
+                        icon = Icons.Default.HealthAndSafety,
+                        label = "Hearing Protection",
+                        checked = settings.hearingProtection,
+                        onCheckedChange = { deviceViewModel.setHearingProtection(it) }
                     )
                 }
             }

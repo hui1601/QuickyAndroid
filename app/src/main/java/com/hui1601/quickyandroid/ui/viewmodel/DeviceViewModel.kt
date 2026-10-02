@@ -15,6 +15,7 @@ import com.hui1601.quickyandroid.ble.JlGattClient
 import com.hui1601.quickyandroid.ble.Protocol
 import com.hui1601.quickyandroid.ble.QcyGattClient
 import com.hui1601.quickyandroid.ble.VendorRouter
+import com.hui1601.quickyandroid.ble.WuqiSoundProtocol
 import com.hui1601.quickyandroid.ble.WuqiGattClient
 import com.hui1601.quickyandroid.ble.ZrGattClient
 import com.hui1601.quickyandroid.data.model.BatteryStatus
@@ -133,6 +134,8 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     jlClient?.runConnectHandshake()
                 }
                 requestInitialState()
+                refreshHiddenSoundChannel()
+                _parametricEqSupported.value = getActiveClient() is QcyGattClient
                 startBatteryPolling()
                 if (_settings.value.battery.isEmpty()) {
                     requestBattery()
@@ -148,6 +151,8 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
             is QcyGattClient.GattEvent.Disconnected -> {
                 batteryPollJob?.cancel()
                 batteryPollJob = null
+                _hiddenSoundChannel.value = false
+                _parametricEqSupported.value = false
                 if (!userRequestedDisconnect && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                     // Bounded automatic retry, mirroring the official app's
                     // reconnection behavior on unexpected drops.
@@ -421,6 +426,96 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         _settings.update { it.copy(spatialAudio = enabled) }
     }
 
+    // ── Hidden WuQi sound-command channel ──────────────────────────────
+
+    private val _hiddenSoundChannel = MutableStateFlow(false)
+    /** True when the connected device exposes the WuQi 0x7033/0x2001
+     * diagnostics channel — the surface carrying the hidden spatial-audio /
+     * hearing-protection commands. */
+    val hiddenSoundChannel: StateFlow<Boolean> = _hiddenSoundChannel.asStateFlow()
+
+    private fun refreshHiddenSoundChannel() {
+        _hiddenSoundChannel.value = when (val client = getActiveClient()) {
+            is QcyGattClient -> client.hasWuqiChannel()
+            is WuqiGattClient -> true
+            else -> false
+        }
+    }
+
+    /** Send a WuQi sound command by firmware command ID over the 0x2001
+     * channel (works for the standard client when the WuQi service is also
+     * present, and for WuQi-only connections). */
+    fun sendSound(wuqiCmdId: Int, payload: ByteArray): Boolean {
+        return when (val client = getActiveClient()) {
+            is WuqiGattClient -> client.sendSoundCommand(wuqiCmdId, payload)
+            is QcyGattClient -> WuqiSoundProtocol.prefixFor(wuqiCmdId)?.let { client.sendWuqiSoundFrame(it, payload) } ?: false
+            else -> false
+        }
+    }
+
+    /**
+     * Hearing protection toggle — hidden WuQi command pair 0x22/0x20
+     * (prefixes A1 F9 / A1 5A, catalog/hidden_features.md §2): parsed by the
+     * firmware but absent from the retail HT18 control panel.
+     */
+    fun setHearingProtection(enabled: Boolean) {
+        if (sendSound(WuqiSoundProtocol.CMD_SET_HEARING_PROTECTION_STATUS, byteArrayOf(if (enabled) 1 else 0))) {
+            _settings.update { it.copy(hearingProtection = enabled) }
+        }
+    }
+
+    /** Read back the hidden spatial-audio / hearing-protection state. */
+    fun requestHiddenSoundState() {
+        viewModelScope.launch {
+            sendSound(WuqiSoundProtocol.CMD_SPATIAL_AUDIO_STATUS, byteArrayOf())
+            delay(60)
+            sendSound(WuqiSoundProtocol.CMD_HEARING_PROTECTION_STATUS, byteArrayOf())
+        }
+    }
+
+    /** Developer console: send any catalog sound command with a raw payload. */
+    fun sendHiddenSoundCommand(wuqiCmdId: Int, payload: ByteArray) {
+        if (sendSound(wuqiCmdId, payload)) {
+            logDev("\u2192 snd 0x${Hex.format(wuqiCmdId)} [${Hex.format(payload)}]")
+        }
+    }
+
+    // ── Custom parametric EQ (firmware custom-band unlock) ────────────
+
+    private val _parametricEqSupported = MutableStateFlow(false)
+    /** True when the active client speaks the QCY DataBean protocol that
+     * carries the parametric EQ commands (0x22 write, 0xFE 0x22 read). */
+    val parametricEqSupported: StateFlow<Boolean> = _parametricEqSupported.asStateFlow()
+
+    /**
+     * Push a fully custom parametric EQ: arbitrary frequency, gain, Q and
+     * filter type per band (up to 20) plus the pre-gain, via DataBean cmd
+     * 0x22 with the custom preset type (catalog/EQ_PROTOCOL.md — the retail
+     * app only sends fixed 10-band presets).
+     */
+    fun setParametricEq(preGainDb: Float, bands: List<Protocol.EqBand>) {
+        val client = getActiveClient()
+        if (client !is QcyGattClient) return
+        val sanitized = Protocol.sanitizeEqBands(bands)
+        if (sanitized.isEmpty()) return
+        if (client.sendCommand(0x22.toByte(), Protocol.buildCustomEqBody(preGainDb, sanitized))) {
+            _settings.update {
+                it.copy(
+                    eqPreset = Protocol.EQ_CUSTOM_PRESET_TYPE,
+                    eqParametricBands = sanitized,
+                    eqPreGainDb = preGainDb,
+                    eqBandGains = sanitized.map { band -> band.gainDb }
+                )
+        }
+        }
+    }
+
+    /** Read back the full parametric EQ (0xFE sub-read 0x22 — accepted by
+     * the firmware’s sub-dispatch). */
+    fun requestParametricEq() {
+        send(0xFE.toByte(), byteArrayOf(0x22.toByte()))
+    }
+
     fun setSoundBalance(value: Int) {
         send(0x16, byteArrayOf(value.toByte()))
         _settings.update { it.copy(soundBalance = value) }
@@ -623,6 +718,11 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     send(0xFE.toByte(), byteArrayOf(0x20.toByte()))
                     delay(60)
                     send(0xFE.toByte(), byteArrayOf(0x22.toByte()))
+                    delay(60)
+                    // Per-side EQ presets (firmware-verified 0xFE reads)
+                    send(0xFE.toByte(), byteArrayOf(0x46.toByte()))
+                    delay(60)
+                    send(0xFE.toByte(), byteArrayOf(0x47.toByte()))
                 }
                 "anc" -> {
                     send(0xFE.toByte(), byteArrayOf(0x0C.toByte()))
@@ -643,7 +743,7 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
                 "settings" -> {
-                    listOf(0x14, 0x16, 0x1D, 0x18, 0x19, 0x35, 0x12, 0x10, 0x09, 0x06).forEach { cmd ->
+                    listOf(0x14, 0x16, 0x1D, 0x18, 0x19, 0x35, 0x12, 0x10, 0x09, 0x06, 0x17, 0x24, 0x2A).forEach { cmd ->
                         delay(60)
                         send(0xFE.toByte(), byteArrayOf(cmd.toByte()))
                     }
@@ -909,7 +1009,10 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                 0x0C, 0x08, 0x09, 0x06, 0x23, 0x2D, 0x10, 0x16, 0x1D, 0x35, 0x39,
                 0x32, 0x27, 0x34, 0x0A, 0x20, 0x22,
                 // read-backs for state the UI renders on first open
-                0x14, 0x18, 0x19, 0x2C
+                0x14, 0x18, 0x19, 0x2C,
+                // firmware-verified 0xFE reads newly queried
+                // (catalog/databean_fe_subdispatch.md)
+                0x17, 0x24, 0x2A
             )
             extraCmds.forEach { cmdId ->
                 delay(60)
@@ -924,6 +1027,14 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     delay(60)
                     send(0xFE.toByte(), byteArrayOf(cmdId.toByte()))
                 }
+            // Hidden spatial-audio / hearing-protection state over the WuQi
+            // sound channel (0x2001), when the device exposes it.
+            if (_hiddenSoundChannel.value) {
+                delay(60)
+                sendSound(WuqiSoundProtocol.CMD_SPATIAL_AUDIO_STATUS, byteArrayOf())
+                delay(60)
+                sendSound(WuqiSoundProtocol.CMD_HEARING_PROTECTION_STATUS, byteArrayOf())
+            }
         }
     }
 
@@ -935,6 +1046,13 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
     private fun handleRawNotification(uuid: java.util.UUID, value: ByteArray) {
         logDev("← char ${uuid.toString().substring(3, 8)} [${Hex.format(value)}]")
         when (uuid) {
+            Protocol.WUQI_NOTIFY_UUID -> {
+                // Hidden sound-command response: decode and surface under the
+                // QCY toggle opcodes (0x2D spatial, 0x26 hearing protection).
+                val response = WuqiSoundProtocol.parseResponse(value) ?: return
+                val toggle = WuqiSoundProtocol.responseToQcyToggle(response) ?: return
+                handleNotification(toggle.first, byteArrayOf(toggle.second))
+            }
             Protocol.EQ_UUID -> {
                 if (currentVendor == VendorRouter.VendorType.ZR) {
                     // ZR EQ read: [eqType, 5 gains] at bytes 0x78..0x7D
@@ -1010,6 +1128,10 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
             }
             0x2D -> {
                 if (params.isNotEmpty()) _settings.update { it.copy(spatialAudio = params[0] == 0x01.toByte()) }
+            }
+            0x26 -> {
+                // Hearing protection (synthetic opcode; see WuqiSoundProtocol)
+                if (params.isNotEmpty()) _settings.update { it.copy(hearingProtection = params[0] == 0x01.toByte()) }
             }
             0x16 -> {
                 if (params.isNotEmpty()) _settings.update { it.copy(soundBalance = params[0].toInt() and 0xFF) }
@@ -1093,7 +1215,14 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                 // Parametric EQ response: [eqType, masterGainLo, masterGainHi, bands...]
                 val parsed = Protocol.parseParametricEq(cmdId, params)
                 if (parsed != null) {
-                    _settings.update { it.copy(eqPreset = parsed.eqIndex, eqBandGains = parsed.bands.map { band -> band.gainDb }) }
+                    _settings.update {
+                        it.copy(
+                            eqPreset = parsed.eqIndex,
+                            eqBandGains = parsed.bands.map { band -> band.gainDb },
+                            eqParametricBands = parsed.bands,
+                            eqPreGainDb = parsed.masterGainDb
+                        )
+                    }
                 }
             }
             0x29 -> {

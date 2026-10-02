@@ -104,7 +104,12 @@ object Protocol {
      * (Math.round), all as 16-bit LE and sent unclamped — matching setEQWtihQFG /
      * setEQWtihQFG2 in the official app.
      */
-    fun packParametricEq(cmdId: Byte, eqIndex: Int, masterGainDb: Float, bands: List<EqBand>): ByteArray {
+    fun packParametricEq(cmdId: Byte, eqIndex: Int, masterGainDb: Float, bands: List<EqBand>): ByteArray =
+        packPacket(cmdId, buildParametricEqBody(cmdId, eqIndex, masterGainDb, bands))
+
+    /** Body of a 0x20/0x22/0x46/0x47 parametric-EQ command: [eqType u8,
+     * masterGain/pre-gain s16LE, bands...]. See [buildParametricEqBody]. */
+    fun buildParametricEqBody(cmdId: Byte, eqIndex: Int, masterGainDb: Float, bands: List<EqBand>): ByteArray {
         val v2 = cmdId.toInt() and 0xFF != 0x20
         val stride = if (v2) 7 else 6
         val params = ByteArray(3 + bands.size * stride)
@@ -124,7 +129,7 @@ object Protocol {
             params[offset + 5] = ((q shr 8) and 0xFF).toByte()
             if (v2) params[offset + 6] = band.bandType.toByte()
         }
-        return packPacket(cmdId, params)
+        return params
     }
 
     /**
@@ -283,7 +288,52 @@ object Protocol {
     fun gameConfig(config: Byte) = packPacket(0x4A, byteArrayOf(config))
     fun requestData(cmdId: Byte) = packPacket(0xFE.toByte(), byteArrayOf(cmdId))
 
-    // ── Key function helpers ──────────────────────────────────────────
+
+    // ── Custom parametric EQ (firmware "custom-band unlock") ───────────
+    // The HT18 firmware accepts arbitrary frequency, gain, Q and filter
+    // type per band on cmd 0x22, up to 20 bands — the retail app only
+    // ships fixed 10-band presets (catalog/EQ_PROTOCOL.md).
+
+    /** Custom/user preset type. `bType == 1` selects the volume-guarded
+     * factory curve and *ignores* the band records, so custom EQ must use
+     * another type; the volume-dependent safe default for vol < 0x51 is
+     * type 2 (EQ_LoadSafeDefaultPreset). */
+    const val EQ_CUSTOM_PRESET_TYPE = 2
+
+    /** Firmware clamps band records to 20 slots (DataBean_ApplyMultieq2). */
+    const val EQ_MAX_BANDS = 20
+
+    /** freq is u16 on the wire; practical audio range enforced instead. */
+    const val EQ_MIN_FREQ_HZ = 20
+    const val EQ_MAX_FREQ_HZ = 20000
+
+    /** Wire filter-type → DSP map (EQ_ApplyPresetToDsp): 0→4 low-shelf,
+     * 1→3 tilt, 2→0 peaking, 3→2 high-pass, 4→1 low-pass. */
+    enum class EqFilterType(val wireValue: Int, val label: String) {
+        LOW_SHELF(0, "Low Shelf"),
+        TILT(1, "Tilt"),
+        PEAKING(2, "Peaking"),
+        HIGH_PASS(3, "High-pass"),
+        LOW_PASS(4, "Low-pass");
+
+        companion object {
+            fun fromWire(value: Int): EqFilterType? = entries.firstOrNull { it.wireValue == value }
+        }
+    }
+
+    /** Drop structurally invalid bands (freq out of u16 audio range,
+     * non-positive Q) and cap the list at [EQ_MAX_BANDS]. Gains stay
+     * unclamped — the official app sends them unclamped too. */
+    fun sanitizeEqBands(bands: List<EqBand>): List<EqBand> =
+        bands.filter { it.freq in EQ_MIN_FREQ_HZ..EQ_MAX_FREQ_HZ && it.q > 0f }
+            .take(EQ_MAX_BANDS)
+
+    /** Body of a custom-preset cmd 0x22 write: type [EQ_CUSTOM_PRESET_TYPE],
+     * pre-gain (preset id) dB*100 s16LE, then 7-byte band records. */
+    fun buildCustomEqBody(preGainDb: Float, bands: List<EqBand>): ByteArray =
+        buildParametricEqBody(0x22.toByte(), EQ_CUSTOM_PRESET_TYPE, preGainDb, sanitizeEqBands(bands))
+
+    // ── Key function helpers ──────────────────────────────────────
 
     fun buildKeyFunctionMap(pairs: List<Pair<Byte, Byte>>): ByteArray {
         return pairs.flatMap { listOf(it.first, it.second) }.toByteArray()

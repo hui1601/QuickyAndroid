@@ -262,7 +262,7 @@ private fun ScanningPlaceholder() {
 }
 
 @Composable
-private fun DeviceList(
+fun DeviceList(
     devices: List<ScannedDevice>,
     onDeviceClick: (ScannedDevice) -> Unit,
     skipEntranceAnimation: Boolean,

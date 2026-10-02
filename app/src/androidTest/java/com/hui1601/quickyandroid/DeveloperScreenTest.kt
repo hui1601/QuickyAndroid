@@ -35,6 +35,11 @@ class DeveloperScreenTest {
         composeRule.onNodeWithText("Read current (0xFF)").assertExists()
         composeRule.onNodeWithText("Raw Command").assertExists()
         composeRule.onNodeWithText("Request Data (cmd 0xFE)").assertExists()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Hidden Sound Commands (0x2001)"))
+        composeRule.onNodeWithText("Hidden Sound Commands (0x2001)").assertExists()
+        composeRule.onNodeWithText("Spatial?").assertExists()
+        composeRule.onNodeWithText("Hearing?").assertExists()
+        composeRule.onNodeWithText("Send frame").assertExists()
         composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Event Log"))
         composeRule.onNodeWithText("Event Log").assertExists()
 
@@ -45,6 +50,9 @@ class DeveloperScreenTest {
             vm.requestNoiseValue()
             vm.sendRawCommand(0x07, byteArrayOf(0x05))
             vm.requestDataFor(0x0C)
+            vm.sendHiddenSoundCommand(0x20, byteArrayOf())
+            vm.setHearingProtection(true)
+            vm.requestHiddenSoundState()
         }
         composeRule.waitForIdle()
     }

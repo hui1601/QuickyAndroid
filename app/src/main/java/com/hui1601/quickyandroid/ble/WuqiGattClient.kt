@@ -57,7 +57,8 @@ class WuqiGattClient(private val context: Context) {
     private val writeQueue = ArrayDeque<ByteArray>()
     private var writePending = false
 
-    // Command keys (commandMap, SoundProtocol3936.smali:1420-1720)
+    // Command keys (commandMap, SoundProtocol3936.smali:1420-1720 + the
+    // firmware-side ID→prefix table in catalog/wuqi_sound_protocol_command_map.tsv)
     private val commandKeys = mapOf(
         0x00.toByte() to byteArrayOf(0xA1.toByte(), 0x51.toByte()), // ALL_DEVICE_INFORMATION
         0x02.toByte() to byteArrayOf(0xA1.toByte(), 0x53.toByte()), // DEVICE_ELECTRICAL_VALUE
@@ -72,8 +73,10 @@ class WuqiGattClient(private val context: Context) {
         0x15.toByte() to byteArrayOf(0xA1.toByte(), 0x57.toByte()), // READ_THE_LDAC_STATUS
         0x16.toByte() to byteArrayOf(0xA1.toByte(), 0xFF.toByte()), // SET_THE_LDAC_STATUS
         0x17.toByte() to byteArrayOf(0xA1.toByte(), 0x58.toByte()), // READ_GAME_MODE
-        0x1F.toByte() to byteArrayOf(0xA1.toByte(), 0x59.toByte()), // SPATIAL_AUDIO_STATUS (read)
-        0x21.toByte() to byteArrayOf(0xA1.toByte(), 0xF8.toByte())  // SET_SPATIAL_AUDIO_STATUS
+        0x1F.toByte() to byteArrayOf(0xA1.toByte(), 0x59.toByte()), // SPATIAL_AUDIO_STATUS (read, hidden)
+        0x20.toByte() to byteArrayOf(0xA1.toByte(), 0x5A.toByte()), // HEARING_PROTECTION_STATUS (read, hidden)
+        0x21.toByte() to byteArrayOf(0xA1.toByte(), 0xF8.toByte()), // SET_SPATIAL_AUDIO_STATUS (hidden)
+        0x22.toByte() to byteArrayOf(0xA1.toByte(), 0xF9.toByte())  // SET_HEARING_PROTECTION_STATUS (hidden)
     )
 
     // Map QCY opcode to Wuqi command ID (set/write direction)
@@ -84,7 +87,8 @@ class WuqiGattClient(private val context: Context) {
         0x09.toByte() to 0x08.toByte(), // Game mode set
         0x10.toByte() to 0x07.toByte(), // Sleep mode -> auto power off
         0x23.toByte() to 0x16.toByte(), // LDAC set
-        0x2D.toByte() to 0x21.toByte(), // Spatial audio set
+        0x2D.toByte() to 0x21.toByte(), // Spatial audio set (hidden prefix A1 F8)
+        0x26.toByte() to 0x22.toByte(), // Hearing protection set (hidden A1 F9; 0x26 = app-internal synthetic opcode)
         0x2F.toByte() to 0x03.toByte(), // Battery query (key 0x03, not 0x02)
         0x30.toByte() to 0x04.toByte()  // Version
         // NOTE: key-function (QCY 0x2B) is deliberately unmapped — the Wuqi
@@ -98,7 +102,8 @@ class WuqiGattClient(private val context: Context) {
         0x0C.toByte() to 0x10.toByte(), // ANC status
         0x09.toByte() to 0x17.toByte(), // game mode
         0x23.toByte() to 0x15.toByte(), // LDAC status
-        0x2D.toByte() to 0x1F.toByte(), // spatial audio status
+        0x2D.toByte() to 0x1F.toByte(), // spatial audio status (hidden A1 59)
+        0x26.toByte() to 0x20.toByte(), // hearing protection status (hidden A1 5A)
         0x2F.toByte() to 0x03.toByte(), // battery
         0x30.toByte() to 0x04.toByte()  // version
     )
@@ -128,7 +133,9 @@ class WuqiGattClient(private val context: Context) {
         0x16.toByte() to 0x23.toByte(), // LDAC set echo
         0x17.toByte() to 0x09.toByte(), // game mode read
         0x1F.toByte() to 0x2D.toByte(), // spatial read
-        0x21.toByte() to 0x2D.toByte()  // spatial set echo
+        0x21.toByte() to 0x2D.toByte(), // spatial set echo
+        0x20.toByte() to WuqiSoundProtocol.QCY_SYNTH_HEARING_PROTECTION, // hearing protection read
+        0x22.toByte() to WuqiSoundProtocol.QCY_SYNTH_HEARING_PROTECTION  // hearing protection set echo
     )
 
     fun disconnect() {
@@ -152,6 +159,18 @@ class WuqiGattClient(private val context: Context) {
         val key = commandKeys[wuqiCmd] ?: return false
         val adapted = adaptParams(cmdId, params)
         return enqueueWrite(buildPacket(key, adapted))
+    }
+
+    /**
+     * Send any WuQi sound-protocol command by firmware command ID
+     * (catalog/wuqi_sound_protocol_command_map.tsv) — developer console
+     * entry into the hidden/unexposed prefixes.
+     */
+    fun sendSoundCommand(wuqiCmdId: Int, payload: ByteArray): Boolean {
+        val key = commandKeys[wuqiCmdId.toByte()]
+            ?: WuqiSoundProtocol.prefixFor(wuqiCmdId)
+            ?: return false
+        return enqueueWrite(WuqiSoundProtocol.buildPacket(key, payload))
     }
 
     fun writeEQ(eqType: Int, eqData: ByteArray): Boolean {
@@ -193,29 +212,17 @@ class WuqiGattClient(private val context: Context) {
                 // (attachDeviceAutoPowerOff, smali:3539-3600 — inverted polarity)
                 byteArrayOf(if (params.getOrNull(0) == 0x01.toByte()) 0x00 else 0x01, 0x00)
             }
-            0x23, 0x2D -> {
-                // LDAC / spatial set: on=0x01/off=0x00 (boolean-ish single byte)
+            0x23, 0x2D, 0x26 -> {
+                // LDAC / spatial / hearing-protection set:
+                // on=0x01/off=0x00 (boolean-ish single byte)
                 byteArrayOf(if (params.getOrNull(0) == 0x01.toByte()) 0x01 else 0x00)
             }
             else -> params
         }
     }
 
-    private fun buildPacket(cmdKey: ByteArray, payload: ByteArray): ByteArray {
-        val totalLen = 3 + 2 + 2 + payload.size + 1
-        val packet = mutableListOf<Byte>()
-        packet.add(0x70.toByte())
-        packet.add(0x33.toByte())
-        packet.add(0xFF.toByte())
-        packet.add((totalLen and 0xFF).toByte())
-        packet.add((totalLen shr 8).toByte())
-        packet.add(cmdKey[0])
-        packet.add(cmdKey[1])
-        payload.forEach { packet.add(it) }
-        val checksum = packet.sumOf { it.toInt() and 0xFF } and 0xFF
-        packet.add(checksum.toByte())
-        return packet.toByteArray()
-    }
+    private fun buildPacket(cmdKey: ByteArray, payload: ByteArray): ByteArray =
+        WuqiSoundProtocol.buildPacket(cmdKey, payload)
 
     // ── write serialization ────────────────────────────────────────────
 
@@ -389,7 +396,7 @@ class WuqiGattClient(private val context: Context) {
             0x10 -> { // Auto power off state -> sleep mode
                 byteArrayOf(if (params.getOrNull(0) == 0x00.toByte()) 0x01 else 0x02)
             }
-            0x23, 0x2D -> { // LDAC / spatial status
+            0x23, 0x2D, 0x26 -> { // LDAC / spatial / hearing-protection status
                 byteArrayOf(if (params.getOrNull(0) == 0x01.toByte()) 0x01 else 0x02)
             }
             0x2F -> {

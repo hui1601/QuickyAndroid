@@ -253,6 +253,20 @@ class WuqiGattClientTest {
     }
 
     @Test
+    fun `adaptParams maps hearing protection toggle to boolean byte`() {
+        // Hidden hearing-protection set (A1 F9) mirrors the LDAC/spatial
+        // adaptation: QCY on/off (1/2) -> Wuqi boolean byte (1/0).
+        assertArrayEquals(bytes(1), adaptParams(0x26, bytes(1)))
+        assertArrayEquals(bytes(0), adaptParams(0x26, bytes(2)))
+    }
+
+    @Test
+    fun `reverseAdaptParams maps hearing protection state to QCY toggle`() {
+        assertArrayEquals(bytes(1), reverseAdaptParams(0x26, bytes(1)))
+        assertArrayEquals(bytes(2), reverseAdaptParams(0x26, bytes(0)))
+    }
+
+    @Test
     fun `parseAndEmit falls back for unknown command key`() {
         val frame = responseFrame(0x01, bytes(0xA9, 0x99), bytes(0x01))
         val event = notificationOf(frame)

@@ -18,8 +18,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +54,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.hui1601.quickyandroid.ui.theme.tabular
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
+import com.hui1601.quickyandroid.ble.Protocol
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +66,7 @@ fun EQScreen(
     val settings by deviceViewModel.settings.collectAsState()
 
     // Pull fresh values from the device when this screen opens
+    val parametricSupported by deviceViewModel.parametricEqSupported.collectAsState()
     LaunchedEffect(Unit) { deviceViewModel.refreshScreenState("eq") }
     val product by deviceViewModel.product.collectAsState()
 
@@ -173,6 +178,186 @@ fun EQScreen(
                         deviceViewModel.setEQ(presetIndex = selectedPreset, bandGains = bandValues, isCustom = true)
                     }
                 )
+            }
+
+            if (parametricSupported) {
+                item { CustomParametricEqSection(deviceViewModel = deviceViewModel) }
+            }
+        }
+    }
+}
+
+// ── Custom parametric EQ (firmware custom-band unlock) ──────────────
+
+/** Ten peaking bands at the classic octave centers — starting point for the
+ * custom editor when the device has not reported a parametric state yet. */
+private fun defaultCustomBands(): List<Protocol.EqBand> =
+    listOf(32, 64, 125, 250, 500, 1_000, 2_000, 4_000, 8_000, 16_000).map {
+        Protocol.EqBand(it, 0f, 1.0f, Protocol.EqFilterType.PEAKING.wireValue)
+    }
+
+private fun formatHz(freq: Int): String =
+    if (freq < 1000) "${freq} Hz" else "%.1f kHz".format(freq / 1000f)
+
+/** Logarithmic slider position for [freq] in the 20 Hz–20 kHz span. */
+private fun freqToSlider(freq: Int): Float =
+    (Math.log(freq / 20.0) / Math.log(1000.0)).toFloat().coerceIn(0f, 1f)
+
+private fun sliderToFreq(t: Float): Int =
+    (20.0 * Math.pow(1000.0, t.toDouble())).toInt().coerceIn(Protocol.EQ_MIN_FREQ_HZ, Protocol.EQ_MAX_FREQ_HZ)
+
+@Composable
+internal fun CustomParametricEqSection(
+    deviceViewModel: DeviceViewModel,
+) {
+    val settings by deviceViewModel.settings.collectAsState()
+
+    var preGain by remember { mutableFloatStateOf(settings.eqPreGainDb) }
+    var bands by remember {
+        mutableStateOf(settings.eqParametricBands.ifEmpty { defaultCustomBands() })
+    }
+    // Follow device read-backs (0xFE 0x22 responses refresh the settings)
+    LaunchedEffect(settings.eqParametricBands, settings.eqPreGainDb) {
+        if (settings.eqParametricBands.isNotEmpty()) {
+            bands = settings.eqParametricBands
+            preGain = settings.eqPreGainDb
+        }
+    }
+
+    Column {
+        Text(
+            text = "Custom Parametric EQ",
+            style = MaterialTheme.typography.titleMediumEmphasized,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        Text(
+            text = "Up to 20 bands with arbitrary frequency, gain, Q and filter " +
+                "type — the firmware accepts far more than the fixed presets.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Pre-gain  %+.1f dB".format(preGain),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Slider(
+                    value = preGain,
+                    onValueChange = { preGain = it },
+                    valueRange = -12f..12f,
+                    steps = 47
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        bands.forEachIndexed { index, band ->
+            CustomBandCard(
+                index = index,
+                band = band,
+                onChange = { updated ->
+                    bands = bands.toMutableList().also { it[index] = updated }
+                },
+                onRemove = {
+                    bands = bands.toMutableList().also { it.removeAt(index) }
+                }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(
+                enabled = bands.size < Protocol.EQ_MAX_BANDS,
+                onClick = {
+                    bands = bands + Protocol.EqBand(
+                        sliderToFreq(0.5f + 0.05f * bands.size),
+                        0f,
+                        1.0f,
+                        Protocol.EqFilterType.PEAKING.wireValue
+                    )
+                }
+            ) { Text("Add band (${bands.size}/${Protocol.EQ_MAX_BANDS})") }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { deviceViewModel.requestParametricEq() }) {
+                Text("Read from device")
+            }
+            Button(
+                enabled = bands.isNotEmpty(),
+                onClick = { deviceViewModel.setParametricEq(preGain, bands) }
+            ) { Text("Apply to device") }
+        }
+    }
+}
+
+@Composable
+private fun CustomBandCard(
+    index: Int,
+    band: Protocol.EqBand,
+    onChange: (Protocol.EqBand) -> Unit,
+    onRemove: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Band ${index + 1}", style = MaterialTheme.typography.titleSmallEmphasized)
+                Text(
+                    formatHz(band.freq),
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Default.Close, contentDescription = "Remove band")
+                }
+            }
+
+            Text("Gain  %+.1f dB".format(band.gainDb), style = MaterialTheme.typography.bodyMedium)
+            Slider(
+                value = band.gainDb,
+                onValueChange = { onChange(band.copy(gainDb = it)) },
+                valueRange = -12f..12f,
+                steps = 47
+            )
+
+            Text("Frequency  ${formatHz(band.freq)}", style = MaterialTheme.typography.bodyMedium)
+            Slider(
+                value = freqToSlider(band.freq),
+                onValueChange = { onChange(band.copy(freq = sliderToFreq(it))) },
+                valueRange = 0f..1f
+            )
+
+            Text("Q  %.2f".format(band.q), style = MaterialTheme.typography.bodyMedium)
+            Slider(
+                value = band.q,
+                onValueChange = { onChange(band.copy(q = it)) },
+                valueRange = 0.3f..5f
+            )
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Protocol.EqFilterType.entries.forEach { type ->
+                    FilterChip(
+                        selected = band.bandType == type.wireValue,
+                        onClick = { onChange(band.copy(bandType = type.wireValue)) },
+                        label = { Text(type.label) }
+                    )
+                }
             }
         }
     }

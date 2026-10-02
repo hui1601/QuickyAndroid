@@ -71,6 +71,14 @@ class QcyGattClient(private val context: Context) {
     private val versionChar: BluetoothGattCharacteristic?
         get() = gatt?.getService(Protocol.SERVICE_UUID)?.getCharacteristic(Protocol.VERSION_UUID)
 
+    // Opportunistic WuQi diagnostics channel: WQ-family firmware also
+    // registers service 0x7033 with chars 0x2001/0x2002 (catalog/
+    // gatt_usr_cfg_service.json). When present alongside 0xA001 this opens
+    // the hidden SoundProtocol3936 command surface (spatial audio, hearing
+    // protection, ...) over the same connection.
+    private var wuqiCommandChar: BluetoothGattCharacteristic? = null
+    private var wuqiNotifyChar: BluetoothGattCharacteristic? = null
+
     suspend fun connect(device: BluetoothDevice): Boolean {
         disconnect()
         connectionDeferred = CompletableDeferred()
@@ -87,6 +95,8 @@ class QcyGattClient(private val context: Context) {
         gatt?.close()
         gatt = null
         isConnected = false
+        wuqiCommandChar = null
+        wuqiNotifyChar = null
         descriptorQueue.clear()
         descriptorWritePending = false
         opQueue.clear()
@@ -98,6 +108,20 @@ class QcyGattClient(private val context: Context) {
     fun sendCommand(cmdId: Byte, params: ByteArray = byteArrayOf()): Boolean {
         val char = commandChar ?: return false
         return enqueueWrite(char, Protocol.packPacket(cmdId, params))
+    }
+
+    /** True when the device also exposes the WuQi 0x7033/0x2001 diagnostics
+     * channel alongside the standard service. */
+    fun hasWuqiChannel(): Boolean = wuqiCommandChar != null
+
+    /**
+     * Send a WuQi SoundProtocol3936 frame over the 0x2001 characteristic
+     * (hidden sound-command surface: spatial audio A1 59/F8, hearing
+     * protection A1 5A/F9, and the remaining catalog prefixes).
+     */
+    fun sendWuqiSoundFrame(cmdKey: ByteArray, payload: ByteArray): Boolean {
+        val char = wuqiCommandChar ?: return false
+        return enqueueWrite(char, WuqiSoundProtocol.buildPacket(cmdKey, payload))
     }
 
     fun writeEQ(data: ByteArray): Boolean {
@@ -314,6 +338,21 @@ class QcyGattClient(private val context: Context) {
                         setCharacteristicNotification(char, true)
                     }
                 }
+
+                // Opportunistic WuQi diagnostics channel (0x7033/0x2001):
+                // cache chars and subscribe to 0x2002 so hidden sound-command
+                // responses surface as RawNotifications.
+                gatt.getService(Protocol.WUQI_SERVICE_UUID)?.let { wuqi ->
+                    wuqiCommandChar = wuqi.getCharacteristic(Protocol.WUQI_COMMAND_UUID)
+                    wuqiNotifyChar = wuqi.getCharacteristic(Protocol.WUQI_NOTIFY_UUID)
+                    wuqiNotifyChar?.let { notify ->
+                        if (notify.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0 ||
+                            notify.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0
+                        ) {
+                            setCharacteristicNotification(notify, true)
+                        }
+                    }
+                }
                 // Mark connected immediately — the official QCY app doesn't wait for
                 // descriptor writes to finish before signalling connection ready.
                 // Descriptor writes continue in the background via the queue.
@@ -380,6 +419,9 @@ class QcyGattClient(private val context: Context) {
             }
             Protocol.BATTERY_UUID -> emitBattery(value)
             else -> {
+                // Includes the WuQi 0x2002 diagnostics notifications when the
+                // hidden sound channel is present — DeviceViewModel decodes
+                // them via WuqiSoundProtocol.parseResponse.
                 _events.tryEmit(GattEvent.RawNotification(uuid, value))
             }
         }

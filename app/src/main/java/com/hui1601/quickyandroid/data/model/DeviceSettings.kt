@@ -1,5 +1,7 @@
 package com.hui1601.quickyandroid.data.model
 
+import com.hui1601.quickyandroid.ble.Protocol
+
 data class DeviceSettings(
     val ancMode: Int = 0,
     val noiseValue: Int = 0,
@@ -9,6 +11,8 @@ data class DeviceSettings(
     val inEarDetection: Boolean = false,
     val ldacEnabled: Boolean = false,
     val spatialAudio: Boolean = false,
+    /** Hearing protection (hidden WuQi sound cmd 0x20/0x22, prefixes A1 5A/F9). */
+    val hearingProtection: Boolean = false,
     val twsEnabled: Boolean = false,
     val ledEnabled: Boolean = false,
     val soundBalance: Int = 50,
@@ -19,6 +23,10 @@ data class DeviceSettings(
     val battery: BatteryStatus = BatteryStatus(),
     val eqPreset: Int = 0,
     val eqBandGains: List<Float> = emptyList(),
+    /** Full parametric EQ state from 0x22/0x46/0x47 read-backs
+     * (firmware custom-band unlock; see Protocol.EqBand). */
+    val eqParametricBands: List<Protocol.EqBand> = emptyList(),
+    val eqPreGainDb: Float = 0f,
     val selectedAncCmdId: Int = 0,
     val sleepMode: Boolean = false,
     val voiceLanguage: String = "en",

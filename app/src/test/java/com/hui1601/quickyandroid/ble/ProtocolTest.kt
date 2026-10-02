@@ -426,6 +426,77 @@ class ProtocolTest {
         assertEquals(2, parsed!!.bands.size)
     }
 
+    // ── custom parametric EQ (firmware custom-band unlock) ───────────
+
+    @Test
+    fun `buildCustomEqBody packs custom preset type pre-gain and 7-byte records`() {
+        val body = Protocol.buildCustomEqBody(
+            -6.0f,
+            listOf(
+                Protocol.EqBand(1000, 3.5f, 1.25f, Protocol.EqFilterType.PEAKING.wireValue),
+                Protocol.EqBand(120, -2.0f, 0.7f, Protocol.EqFilterType.LOW_SHELF.wireValue)
+            )
+        )
+        assertEquals(3 + 2 * 7, body.size)
+        assertEquals(Protocol.EQ_CUSTOM_PRESET_TYPE, body[0].toInt() and 0xFF)
+        // pre-gain dB*100 truncated, s16 LE: -600 = 0xFDA8
+        assertEquals(0xA8.toByte(), body[1])
+        assertEquals(0xFD.toByte(), body[2])
+        // band 1: freq 1000 = 0x03E8, gain 350, q 125, type 2
+        assertEquals(0xE8.toByte(), body[3])
+        assertEquals(0x03.toByte(), body[4])
+        assertEquals((350 and 0xFF).toByte(), body[5])
+        assertEquals(((350 shr 8) and 0xFF).toByte(), body[6])
+        assertEquals((125 and 0xFF).toByte(), body[7])
+        assertEquals(0, body[8].toInt() and 0xFF)
+        assertEquals(2, body[9].toInt() and 0xFF)
+        // band 2 type byte at offset 3 + 7 + 6
+        assertEquals(0, body[3 + 7 + 6].toInt() and 0xFF) // LOW_SHELF wire value
+        assertEquals(120, body[3 + 7].toInt() and 0xFF or ((body[3 + 8].toInt() and 0xFF) shl 8))
+    }
+
+    @Test
+    fun `buildCustomEqBody sanitizes input`() {
+        val body = Protocol.buildCustomEqBody(
+            0f,
+            listOf(
+                Protocol.EqBand(1000, 1f, 1f),      // valid
+                Protocol.EqBand(0, 1f, 1f),          // freq 0 = inactive slot, dropped
+                Protocol.EqBand(70000, 1f, 1f),      // above u16 audio range, dropped
+                Protocol.EqBand(500, 1f, 0f)         // non-positive Q, dropped
+            )
+        )
+        assertEquals(3 + 7, body.size)
+    }
+
+    @Test
+    fun `sanitizeEqBands caps at the firmware limit of 20 bands`() {
+        val many = (1..25).map { Protocol.EqBand(it * 100, 1f, 1f) }
+        assertEquals(Protocol.EQ_MAX_BANDS, Protocol.sanitizeEqBands(many).size)
+        // keeps the first 20 in order
+        assertEquals(100, Protocol.sanitizeEqBands(many).first().freq)
+        assertEquals(2000, Protocol.sanitizeEqBands(many).last().freq)
+    }
+
+    @Test
+    fun `twenty-band custom preset fits the v2 body`() {
+        val bands = (1..20).map { Protocol.EqBand(it * 500, 0f, 1f, Protocol.EqFilterType.PEAKING.wireValue) }
+        val packet = Protocol.packParametricEq(0x22.toByte(), Protocol.EQ_CUSTOM_PRESET_TYPE, 0f, bands)
+        // body 3 + 20*7 = 143 bytes, framed FF 91 22 ...
+        assertEquals(0x91.toByte(), packet[1])
+        assertEquals(0x22.toByte(), packet[2])
+        assertEquals(143, packet.size - 4)
+    }
+
+    @Test
+    fun `filter types map to the firmware wire values`() {
+        // EQ_ApplyPresetToDsp map: 0->4, 1->3, 2->0, 3->2, 4->1
+        assertArrayEquals(intArrayOf(0, 1, 2, 3, 4), Protocol.EqFilterType.entries.map { it.wireValue }.toIntArray())
+        assertEquals(Protocol.EqFilterType.PEAKING, Protocol.EqFilterType.fromWire(2))
+        assertEquals(Protocol.EqFilterType.LOW_PASS, Protocol.EqFilterType.fromWire(4))
+        assertEquals(null, Protocol.EqFilterType.fromWire(9))
+    }
+
     // ── alarm / music builders (AlarmDataBean + setMusicStatus/Info) ──
 
     @Test
