@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +23,8 @@ import com.hui1601.quickyandroid.data.model.BatteryStatus
 import com.hui1601.quickyandroid.data.model.ConnectionState
 import com.hui1601.quickyandroid.data.model.DeviceSettings
 import com.hui1601.quickyandroid.data.model.ProductMetadata
+import com.hui1601.quickyandroid.data.repository.ProductRepository
+import com.hui1601.quickyandroid.data.repository.SavedDeviceStore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +35,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import com.hui1601.quickyandroid.widget.DeviceWidgetState
 import com.hui1601.quickyandroid.widget.DeviceWidgetStore
+import com.hui1601.quickyandroid.widget.WidgetAncBridge
+import com.hui1601.quickyandroid.widget.WidgetAncCommand
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Calendar
@@ -49,6 +54,12 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
     private var retriedWithWuqi = false
 
     private var eventCollectorJob: Job? = null
+    private var connectJob: Job? = null
+    private var reconnectJob: Job? = null
+    private var connectStartedAt: Long = 0L
+
+    private val savedDeviceStore = SavedDeviceStore(application)
+    private val productRepository = ProductRepository(application)
 
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
@@ -67,18 +78,37 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         // snapshot. Unrelated settings churn (EQ, volume, …) is filtered by
         // distinctUntilChanged so only widget-relevant changes push updates.
         viewModelScope.launch {
-            combine(_connectionState, _settings) { state, settings ->
+            combine(_connectionState, _settings, _product) { state, settings, product ->
+                val ancAvailable = !product?.features?.anc?.modes.isNullOrEmpty()
+                val ancSelected = if (settings.selectedAncCmdId > 0) {
+                    WidgetAncCommand.targetFor(product, settings.selectedAncCmdId, settings.ancMode)
+                } else {
+                    null
+                }
                 when (state) {
                     is ConnectionState.Connected -> DeviceWidgetState(
                         connected = true,
                         deviceName = state.deviceName,
-                        battery = settings.battery
+                        battery = settings.battery,
+                        ancSelected = ancSelected,
+                        ancAvailable = ancAvailable,
+                        address = connectedAddress
                     )
                     is ConnectionState.Connecting -> DeviceWidgetState(
                         connecting = true,
-                        deviceName = _product.value?.title.orEmpty()
+                        deviceName = product?.title.orEmpty(),
+                        battery = settings.battery,
+                        ancSelected = ancSelected,
+                        ancAvailable = ancAvailable,
+                        address = connectedAddress
                     )
-                    else -> DeviceWidgetState.Disconnected
+                    else -> DeviceWidgetState(
+                        deviceName = product?.title.orEmpty(),
+                        battery = settings.battery,
+                        ancSelected = ancSelected,
+                        ancAvailable = ancAvailable,
+                        address = connectedAddress
+                    )
                 }
             }
                 .distinctUntilChanged()
@@ -92,7 +122,6 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
 
     // Auto-reconnect bookkeeping
     private var userRequestedDisconnect = false
-    private var reconnectAttempts = 0
 
     private fun getActiveClient(): Any? {
         return when (currentVendor) {
@@ -125,11 +154,32 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
     private fun handleEvent(event: QcyGattClient.GattEvent) {
         when (event) {
             is QcyGattClient.GattEvent.Connected -> {
-                reconnectAttempts = 0
+                reconnectJob?.cancel()
+                reconnectJob = null
                 _connectionState.value = ConnectionState.Connected(
                     _product.value?.title ?: "QCY Device",
                     connectedAddress ?: ""
                 )
+                if (connectStartedAt > 0) {
+                    android.util.Log.d(
+                        "QuickyTiming",
+                        "GATT connected in ${SystemClock.elapsedRealtime() - connectStartedAt} ms"
+                    )
+                }
+                // Remember the device so opening the app later goes straight
+                // to its dashboard instead of forcing another scan.
+                val product = _product.value
+                val address = connectedAddress
+                if (!address.isNullOrBlank()) {
+                    viewModelScope.launch {
+                        savedDeviceStore.remember(
+                            address = address,
+                            name = product?.title?.takeIf { it.isNotBlank() } ?: "QCY Device",
+                            vendorId = product?.vendorId ?: 0
+                        )
+                    }
+                }
+                WidgetAncBridge.register(connectedAddress) { target -> applyWidgetAnc(target) }
                 if (currentVendor == VendorRouter.VendorType.JL || currentVendor == VendorRouter.VendorType.JL_NEW) {
                     jlClient?.runConnectHandshake()
                 }
@@ -153,24 +203,18 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                 batteryPollJob = null
                 _hiddenSoundChannel.value = false
                 _parametricEqSupported.value = false
-                if (!userRequestedDisconnect && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                    // Bounded automatic retry, mirroring the official app's
-                    // reconnection behavior on unexpected drops.
-                    reconnectAttempts++
+                try {
+                    BleService.stop(getApplication())
+                } catch (e: Exception) {
+                    android.util.Log.w("QuickyBle", "Failed to stop foreground service", e)
+                }
+                if (!userRequestedDisconnect) {
+                    // Earbuds are often taken out and put back; keep trying
+                    // every 3 s instead of freezing on one failed attempt.
                     _connectionState.value = ConnectionState.Connecting
-                    viewModelScope.launch {
-                        delay(3_000)
-                        if (!userRequestedDisconnect && _connectionState.value !is ConnectionState.Connected) {
-                            reconnect()
-                        }
-                    }
+                    scheduleReconnect()
                 } else {
                     _connectionState.value = ConnectionState.Disconnected
-                    try {
-                        BleService.stop(getApplication())
-                    } catch (e: Exception) {
-                        android.util.Log.w("QuickyBle", "Failed to stop foreground service", e)
-                    }
                 }
             }
             is QcyGattClient.GattEvent.UnsupportedDevice -> {
@@ -199,6 +243,29 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /**
+     * Reconnect every 3 s while the remembered device is unreachable. The
+     * loop is cancelled on success, explicit disconnect, or device switch.
+     */
+    private fun scheduleReconnect() {
+        if (userRequestedDisconnect) return
+        if (reconnectJob?.isActive == true) return
+        reconnectJob = viewModelScope.launch {
+            while (!userRequestedDisconnect) {
+                delay(3_000)
+                if (userRequestedDisconnect) break
+                if (_connectionState.value is ConnectionState.Connected) break
+                if (connectJob?.isActive == true) continue
+                val address = connectedAddress ?: break
+                connect(
+                    macAddress = address,
+                    product = _product.value,
+                    initialBattery = _settings.value.battery.takeIf { !it.isEmpty() }
+                )
+            }
+        }
+    }
+
     private fun startBatteryPolling() {
         batteryPollJob?.cancel()
         batteryPollJob = viewModelScope.launch {
@@ -221,20 +288,65 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /**
+     * Restore the remembered device's identity without opening a GATT link,
+     * so the dashboard can be the home screen and connect on demand.
+     */
+    fun adoptSavedDevice(address: String, vendorId: Int) {
+        if (connectedAddress != null) return
+        connectedAddress = address
+        _product.value = productRepository.lookup(vendorId)
+        _connectionState.value = ConnectionState.Disconnected
+    }
+
+    /** Connect to a device picked from the Devices screen. */
+    fun connectSaved(address: String, vendorId: Int) {
+        connect(address, productRepository.lookup(vendorId))
+    }
+
+    private var autoConnectAttempted = false
+
+    /**
+     * Opening the app on a remembered device's dashboard should just reconnect;
+     * one attempt per process, and only when a link can actually be opened.
+     */
+    fun autoConnectSaved() {
+        if (autoConnectAttempted) return
+        autoConnectAttempted = true
+        if (_connectionState.value !is ConnectionState.Disconnected) return
+        val address = connectedAddress ?: return
+        if (bluetoothAdapter?.isEnabled != true) return
+        if (!hasConnectPermission()) return
+        connect(address, _product.value)
+    }
+
     fun connect(
         macAddress: String,
         product: ProductMetadata?,
         initialBattery: BatteryStatus? = null,
         forceVendor: VendorRouter.VendorType? = null
     ) {
-        if (_connectionState.value is ConnectionState.Connecting) return
+        // A failed manual attempt may leave the state as Connecting while the
+        // job is already dead; only an in-flight job counts as "already linked".
+        if (connectedAddress == macAddress &&
+            (_connectionState.value is ConnectionState.Connected || connectJob?.isActive == true)
+        ) {
+            return
+        }
+
+        // Switching devices must tear down the previous link first; otherwise
+        // the old GATT client stays connected and both event streams race.
+        if (connectedAddress != null && connectedAddress != macAddress) {
+            teardownConnection()
+        }
+        connectStartedAt = SystemClock.elapsedRealtime()
+        android.util.Log.d("QuickyTiming", "connect() start for $macAddress")
         _connectionState.value = ConnectionState.Connecting
         _product.value = product
         connectedAddress = macAddress
         if (forceVendor == null) {
             retriedWithWuqi = false
             userRequestedDisconnect = false
-            reconnectAttempts = 0
         }
         if (initialBattery != null) {
             _settings.update { it.copy(battery = initialBattery) }
@@ -254,7 +366,7 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         } ?: VendorRouter.detectVendorType(product?.vendorId ?: 0)
         currentVendor = vendorType
 
-        viewModelScope.launch {
+        connectJob = viewModelScope.launch {
             try {
                 val device = bluetoothAdapter?.getRemoteDevice(macAddress)
                 if (device == null) {
@@ -262,7 +374,7 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     return@launch
                 }
 
-                val success = withTimeoutOrNull(15_000) {
+                val success = withTimeoutOrNull(8_000) {
                     when (vendorType) {
                         VendorRouter.VendorType.JL, VendorRouter.VendorType.JL_NEW -> {
                             // Old-JL (0x70xx/0x200) speaks the ADV-opcode
@@ -296,19 +408,29 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
 
                 if (!success) {
                     _connectionState.value = ConnectionState.Error("Connection failed or timed out")
+                    scheduleReconnect()
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: SecurityException) {
                 _connectionState.value = ConnectionState.Error("Permission denied: ${e.message}")
+                scheduleReconnect()
             } catch (e: IllegalArgumentException) {
                 _connectionState.value = ConnectionState.Error("Invalid device: ${e.message}")
+                scheduleReconnect()
             } catch (e: Exception) {
                 _connectionState.value = ConnectionState.Error("Connection error: ${e.message}")
+                scheduleReconnect()
             }
         }
     }
 
-    fun disconnect() {
-        userRequestedDisconnect = true
+    private fun teardownConnection() {
+        WidgetAncBridge.unregister()
+        reconnectJob?.cancel()
+        reconnectJob = null
+        connectJob?.cancel()
+        connectJob = null
         eventCollectorJob?.cancel()
         eventCollectorJob = null
         standardClient?.disconnect()
@@ -325,6 +447,11 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
             BleService.stop(getApplication())
         } catch (_: Exception) {
         }
+    }
+
+    fun disconnect() {
+        userRequestedDisconnect = true
+        teardownConnection()
         _connectionState.value = ConnectionState.Disconnected
     }
 
@@ -379,6 +506,13 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         val noiseValue: Byte = 0x00
         send(0x17, byteArrayOf(mode, subScene, noiseValue))
         _settings.update { it.copy(ancMode = mode.toInt() and 0xFF, selectedAncCmdId = (mode.toInt() shl 16) or (subScene.toInt() shl 8)) }
+    }
+
+    /** Entry point used by the ANC home-screen widget through [WidgetAncBridge]. */
+    private fun applyWidgetAnc(target: Int): Boolean {
+        if (_connectionState.value !is ConnectionState.Connected) return false
+        setAncPacked(WidgetAncCommand.commandFor(_product.value, target))
+        return true
     }
 
     fun setAncPacked(cmdId: Int) {
@@ -1307,7 +1441,6 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     companion object {
-        private const val MAX_RECONNECT_ATTEMPTS = 5
         private const val DEV_LOG_LIMIT = 200
 
         /** Settings cmdIds already exposed through dedicated UI rows; the

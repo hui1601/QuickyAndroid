@@ -12,7 +12,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import com.hui1601.quickyandroid.ui.components.QcyLottie
 import com.hui1601.quickyandroid.ui.theme.QuickyMotion
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -46,7 +45,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Bluetooth
-import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.LightMode
@@ -67,6 +66,7 @@ import androidx.compose.material.icons.filled.WbIncandescent
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.DevicesOther
 import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -75,13 +75,17 @@ import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.toShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -101,6 +105,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -130,7 +135,8 @@ import com.hui1601.quickyandroid.util.WindowSizeClass
 @Composable
 fun DeviceDashboardScreen(
     deviceViewModel: DeviceViewModel,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
+    onDevices: () -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
@@ -140,11 +146,11 @@ fun DeviceDashboardScreen(
     val connectedAddress = deviceViewModel.connectedAddress
     var selectedScreen by remember { mutableStateOf<String?>(null) }
 
-    BackHandler {
+    BackHandler(enabled = selectedScreen != null || onBack != null) {
         if (selectedScreen != null) {
             selectedScreen = null
         } else {
-            onBack()
+            onBack?.invoke()
         }
     }
 
@@ -192,8 +198,8 @@ fun DeviceDashboardScreen(
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
                 onBack = onBack,
+                onDevices = onDevices,
                 onReconnect = { deviceViewModel.reconnect() },
-                onDisconnect = { deviceViewModel.disconnect() },
                 onFeatureClick = { id ->
                     when (id) {
                         "game" -> deviceViewModel.setGameMode(!settings.gameMode)
@@ -230,53 +236,59 @@ private fun DashboardContent(
     connectedAddress: String?,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
+    onDevices: () -> Unit,
     onReconnect: () -> Unit,
-    onDisconnect: () -> Unit,
     onFeatureClick: (String) -> Unit,
     onMusicControl: (Byte) -> Unit
 ) {
     val isConnected = connectionState is ConnectionState.Connected
     val isConnecting = connectionState is ConnectionState.Connecting
     val scrollState = rememberScrollState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeFlexibleTopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            product?.title ?: "QCY Device",
-                            style = MaterialTheme.typography.headlineSmallEmphasized
-                        )
-                        ConnectionPill(isConnected = isConnected, isConnecting = isConnecting)
-                    }
+                    Text(
+                        product?.title ?: "QCY Device",
+                        style = MaterialTheme.typography.headlineMediumEmphasized
+                    )
+                },
+                subtitle = {
+                    ConnectionPill(isConnected = isConnected, isConnecting = isConnecting)
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
                     }
                 },
                 actions = {
-                    IconButton(onClick = onDisconnect) {
+                    FilledTonalIconButton(onClick = onDevices) {
                         Icon(
-                            Icons.Default.BluetoothDisabled,
-                            contentDescription = "Disconnect"
+                            Icons.Default.DevicesOther,
+                            contentDescription = "My devices"
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                ),
+                scrollBehavior = scrollBehavior
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(padding)
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -295,15 +307,22 @@ private fun DashboardContent(
                 ConnectingCard()
                 Spacer(modifier = Modifier.height(16.dp))
             } else if (!isConnected) {
-                ReconnectCard(onReconnect = onReconnect)
+                ReconnectCard(
+                    onReconnect = onReconnect,
+                    errorMessage = (connectionState as? ConnectionState.Error)?.message
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            BatterySection(
-                battery = settings.battery,
-                imageUrl = product?.leftImgUrl?.ifBlank { null }
-                    ?: product?.rightImgUrl?.ifBlank { null }
-            )
+            // Unknown 0/0/0 readings before the first connection would look
+            // like three dead batteries; wait until there is real data.
+            if (isConnected || !settings.battery.isEmpty()) {
+                BatterySection(
+                    battery = settings.battery,
+                    imageUrl = product?.leftImgUrl?.ifBlank { null }
+                        ?: product?.rightImgUrl?.ifBlank { null }
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -335,7 +354,7 @@ private fun DashboardContent(
                             Box(modifier = Modifier.weight(1f)) {
                                 FeatureRow(
                                     item = feature,
-                                    enabled = feature.enabled && isConnected,
+                                    enabled = feature.enabled && (isConnected || !feature.requiresConnection),
                                     onClick = { onFeatureClick(feature.id) },
                                     enterDelay = delay
                                 )
@@ -353,7 +372,7 @@ private fun DashboardContent(
                     val delay = index * 60
                     FeatureRow(
                         item = feature,
-                        enabled = feature.enabled && isConnected,
+                        enabled = feature.enabled && (isConnected || !feature.requiresConnection),
                         onClick = { onFeatureClick(feature.id) },
                         enterDelay = delay
                     )
@@ -450,11 +469,11 @@ private fun ConnectionPill(isConnected: Boolean, isConnecting: Boolean) {
             label = "connPillIcon"
         ) { s ->
             when (s) {
-                // One-shot check draw-in; holds the final frame as the connected badge.
-                "connected" -> QcyLottie(
-                    asset = "lottie/connected_success.json",
-                    modifier = Modifier.size(20.dp),
-                    iterations = 1
+                "connected" -> Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
                 "connecting" -> Box(
                     modifier = Modifier
@@ -555,7 +574,7 @@ private fun ProductHero(
                             rememberSharedContentState(key = "device-image-$connectedAddress"),
                             animatedVisibilityScope = animatedVisibilityScope,
                             boundsTransform = { _, _ ->
-                                tween<Rect>(durationMillis = 400, easing = QuickyMotion.EmphasizedDecelerate)
+                                tween<Rect>(durationMillis = 550, easing = QuickyMotion.EmphasizedDecelerate)
                             }
                         ),
                     crossfade = false
@@ -775,6 +794,8 @@ private fun NavigateFeatureCard(
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "rowScale"
     )
+    val activeContent = MaterialTheme.colorScheme.onPrimaryContainer
+    val content = if (item.active) activeContent else MaterialTheme.colorScheme.onSurface
 
     Card(
         modifier = modifier
@@ -807,10 +828,10 @@ private fun NavigateFeatureCard(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(CircleShape)
+                    .clip(MaterialShapes.Cookie9Sided.toShape())
                     .background(
                         if (item.active)
-                            MaterialTheme.colorScheme.primary
+                            MaterialTheme.colorScheme.secondary
                         else
                             MaterialTheme.colorScheme.primaryContainer
                     ),
@@ -821,7 +842,7 @@ private fun NavigateFeatureCard(
                     contentDescription = item.title,
                     modifier = Modifier.size(24.dp),
                     tint = if (item.active)
-                        MaterialTheme.colorScheme.onPrimary
+                        MaterialTheme.colorScheme.onSecondary
                     else
                         MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -833,17 +854,13 @@ private fun NavigateFeatureCard(
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.bodyLargeEmphasized,
-                    color = if (enabled) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    color = if (enabled) content else content.copy(alpha = 0.4f)
                 )
                 if (item.subtitle.isNotBlank()) {
                     Text(
                         text = item.subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (enabled)
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        color = if (enabled) content.copy(alpha = 0.72f) else content.copy(alpha = 0.4f)
                     )
                 }
             }
@@ -852,9 +869,9 @@ private fun NavigateFeatureCard(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = if (enabled)
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    content.copy(alpha = 0.72f)
                 else
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                    content.copy(alpha = 0.3f)
             )
         }
     }
@@ -869,7 +886,9 @@ private data class FeatureItem(
     val icon: ImageVector,
     val enabled: Boolean,
     val active: Boolean = false,
-    val actionType: FeatureAction = FeatureAction.NAVIGATE
+    val actionType: FeatureAction = FeatureAction.NAVIGATE,
+    /** Find My Earphone stays reachable while disconnected. */
+    val requiresConnection: Boolean = true
 )
 
 /**
@@ -1054,7 +1073,8 @@ private fun buildFeatureList(product: ProductMetadata?, settings: DeviceSettings
             "find", "Find My Earphone",
             "Locate your earbuds",
             Icons.Default.LocationOn,
-            enabled = true
+            enabled = true,
+            requiresConnection = false
         ).takeIf { hasFindEarphone || features == null },
         FeatureItem(
             "settings", "Device Settings",
@@ -1113,10 +1133,7 @@ private fun ConnectingCard() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            QcyLottie(
-                asset = "lottie/connecting.json",
-                modifier = Modifier.size(width = 96.dp, height = 48.dp)
-            )
+            LoadingIndicator(modifier = Modifier.size(48.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Connecting…",
@@ -1134,7 +1151,10 @@ private fun ConnectingCard() {
 }
 
 @Composable
-private fun ReconnectCard(onReconnect: () -> Unit) {
+private fun ReconnectCard(
+    onReconnect: () -> Unit,
+    errorMessage: String? = null
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1168,15 +1188,18 @@ private fun ReconnectCard(onReconnect: () -> Unit) {
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Disconnected — tap to reconnect",
+                    text = "Not connected",
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     color = MaterialTheme.colorScheme.onErrorContainer
                 )
                 Text(
-                    text = "Some features are unavailable while disconnected",
+                    text = errorMessage ?: "Tap Connect to link to your earbuds",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
                 )
+            }
+            androidx.compose.material3.FilledTonalButton(onClick = onReconnect) {
+                Text("Connect")
             }
         }
     }

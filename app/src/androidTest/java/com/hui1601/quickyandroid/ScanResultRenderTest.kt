@@ -56,6 +56,8 @@ class ScanResultRenderTest {
                                 devices = listOf(fakeDevice),
                                 onDeviceClick = {},
                                 skipEntranceAnimation = false,
+                                savedAddresses = emptySet(),
+                                connectedAddress = null,
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 animatedVisibilityScope = this@AnimatedContent
                             )

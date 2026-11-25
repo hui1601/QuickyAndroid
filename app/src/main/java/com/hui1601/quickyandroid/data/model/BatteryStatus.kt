@@ -1,5 +1,8 @@
 package com.hui1601.quickyandroid.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class BatteryStatus(
     val leftLevel: Int = 0,
     val leftCharging: Boolean = false,

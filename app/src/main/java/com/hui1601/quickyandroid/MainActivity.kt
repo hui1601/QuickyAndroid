@@ -14,18 +14,30 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hui1601.quickyandroid.data.model.BatteryStatus
+import com.hui1601.quickyandroid.data.model.ConnectionState
+import com.hui1601.quickyandroid.data.repository.SavedDevice
+import com.hui1601.quickyandroid.data.repository.SavedDeviceStore
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
@@ -39,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import com.hui1601.quickyandroid.ui.screens.DeviceDashboardScreen
+import com.hui1601.quickyandroid.ui.screens.DevicesScreen
 import com.hui1601.quickyandroid.ui.screens.ScanScreen
 import com.hui1601.quickyandroid.ui.theme.QuickyAndroidTheme
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
@@ -118,7 +131,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun QuickyApp() {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -134,11 +147,49 @@ fun QuickyApp() {
         else -> isSystemDark
     }
 
+    val savedDeviceStore = remember { SavedDeviceStore(context) }
+    var savedDevices by remember { mutableStateOf<List<SavedDevice>>(emptyList()) }
+    var savedDevicesLoaded by remember { mutableStateOf(false) }
+    LaunchedEffect(savedDeviceStore) {
+        savedDeviceStore.devices.collect {
+            savedDevices = it
+            savedDevicesLoaded = true
+        }
+    }
+
     QuickyAndroidTheme(darkTheme = isDarkTheme, dynamicColor = dynamicColor) {
+        if (!savedDevicesLoaded) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    LoadingIndicator(modifier = Modifier.size(48.dp))
+                }
+            }
+            return@QuickyAndroidTheme
+        }
+
+        // Always land on the last-used device's dashboard; the Devices screen
+        // (top bar) is where other saved earbuds live. No saved device starts
+        // the pairing flow.
+        val startDestination = remember {
+            if (savedDevices.isEmpty()) "scan" else "dashboard"
+        }
         val navController = rememberNavController()
         val scanViewModel: ScanViewModel = viewModel()
         val deviceViewModel: DeviceViewModel = viewModel()
+        val connectionState by deviceViewModel.connectionState.collectAsState()
         val scope = rememberCoroutineScope()
+
+        LaunchedEffect(startDestination) {
+            if (startDestination == "dashboard") {
+                savedDevices.firstOrNull()?.let {
+                    deviceViewModel.adoptSavedDevice(it.address, it.vendorId)
+                    deviceViewModel.autoConnectSaved()
+                }
+            }
+        }
 
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -148,6 +199,21 @@ fun QuickyApp() {
                 initialOffsetX = { it },
                 animationSpec = QuickyMotion.transitionEnterSpatial()
             ) + fadeIn(animationSpec = QuickyMotion.transitionFade())
+            // The dashboard entry plays while the GATT link is being opened;
+            // give it a little more room so the connection usually settles
+            // before the user reaches for a control.
+            val dashboardEnterTransition = slideInHorizontally(
+                initialOffsetX = { it },
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 550,
+                    easing = QuickyMotion.EmphasizedDecelerate
+                )
+            ) + fadeIn(
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 300,
+                    easing = QuickyMotion.StandardEasing
+                )
+            )
             val exitTransition = slideOutHorizontally(
                 targetOffsetX = { -it / 3 },
                 animationSpec = QuickyMotion.transitionExitSpatial()
@@ -161,10 +227,27 @@ fun QuickyApp() {
                 animationSpec = QuickyMotion.transitionExitSpatial()
             ) + fadeOut(animationSpec = QuickyMotion.transitionFade())
 
+            val openDashboard: () -> Unit = {
+                // Return to an existing dashboard (dropping the scan/Devices
+                // screens above it). Otherwise close the pairing screen and
+                // push the dashboard so Back lands on Devices — not on a
+                // stale scan screen.
+                if (!navController.popBackStack("dashboard", inclusive = false)) {
+                    // Only the pushed pairing screen should be removed. The
+                    // Devices root must stay below the dashboard.
+                    if (navController.currentDestination?.route == "scan" &&
+                        navController.previousBackStackEntry != null
+                    ) {
+                        navController.popBackStack()
+                    }
+                    navController.navigate("dashboard") { launchSingleTop = true }
+                }
+            }
+
             SharedTransitionLayout {
                 NavHost(
                     navController = navController,
-                    startDestination = "scan",
+                    startDestination = startDestination,
                     enterTransition = { enterTransition },
                     exitTransition = { exitTransition },
                     popEnterTransition = { popEnterTransition },
@@ -183,23 +266,35 @@ fun QuickyApp() {
                             onDynamicColorChange = { enabled ->
                                 scope.launch { themeSettings.setDynamicColor(enabled) }
                             },
+                            savedDevices = savedDevices,
+                            connectionState = connectionState,
+                            onBack = if (startDestination != "scan") {
+                                { navController.popBackStack() }
+                            } else null,
                             onDeviceClick = { device ->
-                                // Prefetch hero images so the shared element's target is already cached
-                                val imageLoader = context.imageLoader
-                                device.product?.leftImgUrl?.let { imageLoader.enqueue(ImageRequest.Builder(context).data(it).build()) }
-                                device.product?.rightImgUrl?.let { imageLoader.enqueue(ImageRequest.Builder(context).data(it).build()) }
-                                // Use the BLE scan address for GATT connection, not controlMac
-                                val connectAddress = device.address.takeIf { it.isNotBlank() } ?: device.controlMac
-                                val initialBattery = BatteryStatus(
-                                    leftLevel = device.leftBattery,
-                                    leftCharging = device.isLeftCharging,
-                                    rightLevel = device.rightBattery,
-                                    rightCharging = device.isRightCharging,
-                                    caseLevel = device.caseBattery,
-                                    caseCharging = device.isCaseCharging
-                                )
-                                deviceViewModel.connect(connectAddress, device.product, initialBattery)
-                                navController.navigate("dashboard")
+                                val state = deviceViewModel.connectionState.value
+                                val alreadyLinked = deviceViewModel.connectedAddress == device.address &&
+                                    (state is ConnectionState.Connected || state is ConnectionState.Connecting)
+                                if (alreadyLinked) {
+                                    openDashboard()
+                                } else {
+                                    // Prefetch hero images so the shared element's target is already cached
+                                    val imageLoader = context.imageLoader
+                                    device.product?.leftImgUrl?.let { imageLoader.enqueue(ImageRequest.Builder(context).data(it).build()) }
+                                    device.product?.rightImgUrl?.let { imageLoader.enqueue(ImageRequest.Builder(context).data(it).build()) }
+                                    // Use the BLE scan address for GATT connection, not controlMac
+                                    val connectAddress = device.address.takeIf { it.isNotBlank() } ?: device.controlMac
+                                    val initialBattery = BatteryStatus(
+                                        leftLevel = device.leftBattery,
+                                        leftCharging = device.isLeftCharging,
+                                        rightLevel = device.rightBattery,
+                                        rightCharging = device.isRightCharging,
+                                        caseLevel = device.caseBattery,
+                                        caseCharging = device.isCaseCharging
+                                    )
+                                    deviceViewModel.connect(connectAddress, device.product, initialBattery)
+                                    openDashboard()
+                                }
                             },
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this@composable
@@ -207,16 +302,54 @@ fun QuickyApp() {
                     }
                     composable(
                         "dashboard",
-                        enterTransition = { enterTransition },
+                        enterTransition = { dashboardEnterTransition },
                         exitTransition = { exitTransition },
                         popEnterTransition = { popEnterTransition },
                         popExitTransition = { popExitTransition }
                     ) {
                         DeviceDashboardScreen(
                             deviceViewModel = deviceViewModel,
-                            onBack = { navController.popBackStack() },
+                            onBack = if (startDestination != "dashboard") {
+                                { navController.popBackStack() }
+                            } else null,
+                            onDevices = {
+                                navController.navigate("devices") { launchSingleTop = true }
+                            },
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this@composable
+                        )
+                    }
+                    composable(
+                        "devices",
+                        enterTransition = { enterTransition },
+                        exitTransition = { exitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
+                    ) {
+                        DevicesScreen(
+                            devices = savedDevices,
+                            connectedAddress = (connectionState as? ConnectionState.Connected)?.address,
+                            onBack = if (startDestination != "devices") {
+                                { navController.popBackStack() }
+                            } else null,
+                            onDeviceClick = { saved ->
+                                val state = deviceViewModel.connectionState.value
+                                val alreadyLinked = deviceViewModel.connectedAddress == saved.address &&
+                                    (state is ConnectionState.Connected || state is ConnectionState.Connecting)
+                                if (!alreadyLinked) {
+                                    deviceViewModel.connectSaved(saved.address, saved.vendorId)
+                                }
+                                openDashboard()
+                            },
+                            onAddDevice = {
+                                navController.navigate("scan") { launchSingleTop = true }
+                            },
+                            onForget = { saved ->
+                                scope.launch { savedDeviceStore.forget(saved.address) }
+                                if (deviceViewModel.connectedAddress == saved.address) {
+                                    deviceViewModel.disconnect()
+                                }
+                            }
                         )
                     }
                 }

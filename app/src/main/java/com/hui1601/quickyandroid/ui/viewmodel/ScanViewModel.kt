@@ -64,6 +64,10 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
     fun startScan() {
         if (scanJob?.isActive == true) return
 
+        // A new scan starts from scratch: keeping the previous list would leave
+        // stale devices (and hide scan errors behind them).
+        _devices.value = emptyList()
+
         if (!hasScanPermission()) {
             _scanState.value = ScanState.Error("Bluetooth scan permission required")
             return
@@ -75,7 +79,6 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         _scanState.value = ScanState.Scanning
-        _devices.value = emptyList()
 
         scanJob = viewModelScope.launch {
             withTimeoutOrNull(15000) {

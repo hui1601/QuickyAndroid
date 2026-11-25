@@ -4,6 +4,7 @@ Unofficial Android app for QCY earbuds, built with Kotlin + Jetpack Compose (Mat
 
 ## What it does
 
+- **Saved devices** — the last used earbuds are remembered: the app opens on their dashboard and reconnects automatically. Multiple pairs are kept in a **Devices** screen (top-bar icon), where you can switch, forget, or add another pair. Pairing lives in the Devices screen instead of being the app's home screen.
 - **Scan & connect** — BLE scan with advertisement parsing (battery levels/charging state per bud and case, product identification), then GATT connection. A foreground service (`BleService`, `connectedDevice` type) keeps the link alive, with auto-reconnect and battery polling.
 - **Vendor protocol routing** — earbuds are routed by vendor ID to the right GATT client, mirroring the original app's chip-family detection (`VendorRouter`):
   - `STANDARD` — QCY service `0xA001` (QCC, WQ, Airoha, RTK, BES families)
@@ -25,7 +26,7 @@ Unofficial Android app for QCY earbuds, built with Kotlin + Jetpack Compose (Mat
   - Wearing detection, Ear Tip Fit test
   - Remote camera shutter
   - Key Controls — remap touch gestures per event
-  - Find My Earphone — make a lost bud ring
+  - Find My Earphone — make a lost bud ring (animated pulse), OpenStreetMap-reverse-geocoded last location with a tap-to-open map action; the screen is reachable while disconnected and offers a Connect action
   - Device Settings — product-specific toggles
 - **Hidden firmware features** (from the HT18 firmware RE workspace
   `/data/reversing/qcy-ht18`):
@@ -43,7 +44,9 @@ Unofficial Android app for QCY earbuds, built with Kotlin + Jetpack Compose (Mat
   - **Developer console** — raw sender for any of the 38 firmware sound
     commands (ID → prefix table in `WuqiSoundProtocol`), with live response
     logging on `0x2002`.
-- **Home-screen widget** — persists and renders the last known connection + battery snapshot (`DeviceWidgetProvider`).
+- **Home-screen widgets** — two independent widgets, both with a per-widget device binding chosen when they are placed:
+  - **Quicky Battery** — connection state plus L/R/case levels (falls back to the last known levels when disconnected).
+  - **Quicky ANC** — Off / ANC / Transparency chips. Switches through the live connection when the app process is around, or through a short-lived `AncWidgetService` GATT link when it is not; non-standard chip families fall back to opening the app.
 - **Theming** — dark mode, dynamic color (Material You), M3 motion, Lottie animations, shared-element transitions between scan and dashboard.
 
 ## Requirements

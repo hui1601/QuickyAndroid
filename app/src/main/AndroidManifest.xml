@@ -47,16 +47,39 @@
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
 
+        <service
+            android:name=".widget.AncWidgetService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <activity
+            android:name=".widget.WidgetConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.QuickyAndroid" />
+
         <receiver
             android:name=".widget.DeviceWidgetProvider"
             android:exported="false"
-            android:label="Quicky Device">
+            android:label="@string/widget_battery_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/device_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.AncWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_anc_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/anc_widget_info" />
         </receiver>
     </application>
 

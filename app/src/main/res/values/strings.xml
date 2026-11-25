@@ -4,6 +4,17 @@
     <string name="bleservice_connected_to">Connected to %1$s</string>
 
     <string name="widget_description">Shows your connected earbuds and battery levels</string>
+    <string name="widget_battery_label">Quicky Battery</string>
+    <string name="widget_anc_label">Quicky ANC</string>
+    <string name="widget_anc_description">Switch noise control between Off, ANC and Transparency from the home screen</string>
+    <string name="widget_anc_title">Noise Control</string>
+    <string name="widget_anc_off">Off</string>
+    <string name="widget_anc_anc">ANC</string>
+    <string name="widget_anc_transparency">Transparency</string>
+    <string name="widget_anc_unavailable">Noise control unavailable</string>
+    <string name="widget_anc_switching">Switching noise control…</string>
+    <string name="widget_anc_channel_name">Widget noise control</string>
+    <string name="widget_anc_failed">Couldn\'t reach your earbuds</string>
     <string name="widget_status_connected">Connected</string>
     <string name="widget_status_connecting">Connecting…</string>
     <string name="widget_status_disconnected">Not connected</string>

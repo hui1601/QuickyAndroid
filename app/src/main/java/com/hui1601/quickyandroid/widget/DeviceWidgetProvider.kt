@@ -19,10 +19,17 @@ import com.hui1601.quickyandroid.data.model.BatteryStatus
 class DeviceWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        appWidgetManager.updateAppWidget(
-            appWidgetIds,
-            buildRemoteViews(context, DeviceWidgetStore.read(context))
-        )
+        appWidgetIds.forEach { id ->
+            appWidgetManager.updateAppWidget(
+                id,
+                buildRemoteViews(context, DeviceWidgetStore.resolveState(context, id))
+            )
+        }
+    }
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        appWidgetIds.forEach { WidgetBindingStore.clear(context, it) }
+        super.onDeleted(context, appWidgetIds)
     }
 
     companion object {
@@ -42,12 +49,6 @@ class DeviceWidgetProvider : AppWidgetProvider() {
             if (state.connected) {
                 views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_status_connected))
                 views.setImageViewResource(R.id.widget_status_dot, R.drawable.widget_dot_connected)
-                views.setTextViewText(R.id.widget_device_name, state.deviceName.ifBlank { "QCY Device" })
-                views.setViewVisibility(R.id.widget_device_name, View.VISIBLE)
-                views.setViewVisibility(R.id.widget_battery_row, View.VISIBLE)
-                bindBattery(views, R.id.widget_left_value, R.id.widget_left_bar, state.battery, Cell.LEFT)
-                bindBattery(views, R.id.widget_right_value, R.id.widget_right_bar, state.battery, Cell.RIGHT)
-                bindBattery(views, R.id.widget_case_value, R.id.widget_case_bar, state.battery, Cell.CASE)
             } else {
                 val statusRes = if (state.connecting) R.string.widget_status_connecting else R.string.widget_status_disconnected
                 views.setTextViewText(R.id.widget_status, context.getString(statusRes))
@@ -55,9 +56,20 @@ class DeviceWidgetProvider : AppWidgetProvider() {
                     R.id.widget_status_dot,
                     if (state.connecting) R.drawable.widget_dot_connecting else R.drawable.widget_dot_disconnected
                 )
-                views.setTextViewText(R.id.widget_device_name, context.getString(R.string.app_name))
-                views.setViewVisibility(R.id.widget_device_name, View.VISIBLE)
-                views.setViewVisibility(R.id.widget_battery_row, View.GONE)
+            }
+            views.setTextViewText(
+                R.id.widget_device_name,
+                state.deviceName.ifBlank { context.getString(R.string.app_name) }
+            )
+            views.setViewVisibility(R.id.widget_device_name, View.VISIBLE)
+            // Levels from the last successful poll stay useful while
+            // disconnected; only hide them when nothing was ever read.
+            val hasBattery = !state.battery.isEmpty()
+            views.setViewVisibility(R.id.widget_battery_row, if (hasBattery) View.VISIBLE else View.GONE)
+            if (hasBattery) {
+                bindBattery(views, R.id.widget_left_value, R.id.widget_left_bar, state.battery, Cell.LEFT)
+                bindBattery(views, R.id.widget_right_value, R.id.widget_right_bar, state.battery, Cell.RIGHT)
+                bindBattery(views, R.id.widget_case_value, R.id.widget_case_bar, state.battery, Cell.CASE)
             }
             return views
         }

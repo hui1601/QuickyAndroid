@@ -41,6 +41,8 @@ class AllProductsRenderTest {
                                 devices = holder.get().toList(),
                                 onDeviceClick = {},
                                 skipEntranceAnimation = true,
+                                savedAddresses = emptySet(),
+                                connectedAddress = null,
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 animatedVisibilityScope = this@AnimatedContent
                             )
