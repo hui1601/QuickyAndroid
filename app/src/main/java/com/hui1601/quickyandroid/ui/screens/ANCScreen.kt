@@ -123,27 +123,28 @@ fun ANCScreen(
                     )
                 }
 
-                // Sub-item chips for modes that expose them (descriptive content)
-                val modesWithSubItems = ancModes.filter { !it.items.isNullOrEmpty() }
-                itemsIndexed(
-                    items = modesWithSubItems,
-                    key = { index, mode -> "${mode.name}_$index" }
-                ) { _, mode ->
-                    AncSubItemsCard(
-                        mode = mode,
-                        selectedCmdId = selectedCmdId,
-                        onSubItemClick = { cmdId ->
-                            deviceViewModel.setAncPacked(cmdId)
-                        }
-                    )
-                }
-
-                // Vocal Boost chip for transparency mode
                 val selectedMode = ancModes.find { mode ->
                     val s = mode.startCmdId ?: 0
                     val e = mode.endCmdId ?: s
                     selectedCmdId in s..e
                 }
+
+                // Sub-item chips belong to the active mode only. Rendering
+                // every mode with items showed ANC levels while Transparency
+                // was selected.
+                if (selectedMode != null && !selectedMode.items.isNullOrEmpty()) {
+                    item(key = "subitems_${selectedMode.name}") {
+                        AncSubItemsCard(
+                            mode = selectedMode,
+                            selectedCmdId = selectedCmdId,
+                            onSubItemClick = { cmdId ->
+                                deviceViewModel.setAncPacked(cmdId)
+                            }
+                        )
+                    }
+                }
+
+                // Vocal Boost chip for transparency mode
                 val isTransparencySelected = selectedMode?.name?.contains("Transparency", ignoreCase = true) == true
                         || selectedMode?.name?.contains("Aware", ignoreCase = true) == true
                 val isVocalBoostActive = settings.ancMode == 0x0E

@@ -2,6 +2,25 @@
 
 Unofficial Android app for QCY earbuds, built with Kotlin + Jetpack Compose (Material 3 Expressive). Communicates directly with the earbuds over BLE GATT using protocols reverse-engineered from the official QCY app.
 
+## Screenshots
+
+Captured on an Android 36 emulator with the bundled **QCY MeloBuds Pro** catalog entry (no hardware attached):
+
+| | |
+|---|---|
+| **Dashboard** | **Noise Control** |
+| ![](docs/screenshots/01-dashboard.png) | ![](docs/screenshots/02-noise-control.png) |
+| **Transparency mode** | **Equalizer — Simple** |
+| ![](docs/screenshots/03-noise-transparency.png) | ![](docs/screenshots/04-equalizer-simple.png) |
+| **Equalizer — Advanced** | **Ear Tip Fit** |
+| ![](docs/screenshots/05-equalizer-advanced.png) | ![](docs/screenshots/06-ear-tip-fit.png) |
+| **Key Controls** | **Find My Earphone** |
+| ![](docs/screenshots/07-key-controls.png) | ![](docs/screenshots/08-find-earphone.png) |
+| **Device Settings** | **App Settings** |
+| ![](docs/screenshots/09-device-settings.png) | ![](docs/screenshots/10-app-settings.png) |
+| **Devices** | |
+| ![](docs/screenshots/11-devices.png) | |
+
 ## What it does
 
 - **Saved devices** — the last used earbuds are remembered: the app opens on their dashboard and reconnects automatically. Multiple pairs are kept in a **Devices** screen (top-bar icon), where you can switch, forget, or add another pair. Pairing lives in the Devices screen instead of being the app's home screen.

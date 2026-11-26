@@ -188,6 +188,7 @@ fun DeviceDashboardScreen(
             "settings" -> SettingsScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = null }, onOpenDeveloper = { selectedScreen = "developer" })
             "developer" -> DeveloperScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = "settings" })
             "volume" -> VolumeScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = null })
+            "key" -> KeyMapScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = null })
             "wearing" -> WearingDetectionScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = null })
             "fittest" -> EarTipFitScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = null })
             "led_effects" -> LEDEffectsScreen(deviceViewModel = deviceViewModel, onBack = { selectedScreen = null })
