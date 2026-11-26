@@ -62,7 +62,7 @@ import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Earbuds
 import androidx.compose.material.icons.filled.WbIncandescent
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Air
@@ -1065,7 +1065,7 @@ private fun buildFeatureList(product: ProductMetadata?, settings: DeviceSettings
         FeatureItem(
             "fittest", "Ear Tip Fit",
             "Test your seal",
-            Icons.Default.FitnessCenter,
+            Icons.Default.Earbuds,
             enabled = true
         ).takeIf { hasEarTipFit || features == null },
         FeatureItem(

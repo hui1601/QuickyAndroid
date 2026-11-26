@@ -32,33 +32,30 @@ class EQScreenTest {
 
     @Test
     fun customParametricSectionRendersWithDefaultBands() {
-        val vm = DeviceViewModel(composeRule.activity.application)
         composeRule.setContent {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
-                CustomParametricEqSection(deviceViewModel = vm)
+                CustomParametricEqSection()
             }
         }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Custom Parametric EQ").assertExists()
+        composeRule.onNodeWithText("Parametric EQ").assertExists()
+        // Only the selected band's editor is shown below the graph.
         composeRule.onNodeWithText("Band 1").assertExists()
-        composeRule.onNodeWithText("Band 10").assertExists()
-        // one filter-chip row per band — every default band is Peaking
         composeRule.onAllNodesWithText("Peaking")[0].assertExists()
         composeRule.onAllNodesWithText("Low-pass")[0].assertExists()
-        composeRule.onNodeWithText("Read from device").assertExists()
-        composeRule.onNodeWithText("Apply to device").assertExists()
         composeRule.onNodeWithText("Add band (10/20)").performScrollTo().performClick()
         composeRule.waitForIdle()
+        // Adding selects the new band, so its card takes over the editor.
         composeRule.onNodeWithText("Band 11").assertExists()
     }
 
     @Test
     fun parametricCallsAreSafeWithoutDevice() {
         val vm = DeviceViewModel(composeRule.activity.application)
-        composeRule.setContent { CustomParametricEqSection(deviceViewModel = vm) }
+        composeRule.setContent { CustomParametricEqSection() }
         composeRule.waitForIdle()
 
         composeRule.runOnUiThread {
@@ -76,6 +73,6 @@ class EQScreenTest {
         composeRule.waitForIdle()
 
         // No connection -> standard-protocol parametric EQ unavailable.
-        composeRule.onNodeWithText("Custom Parametric EQ").assertDoesNotExist()
+        composeRule.onNodeWithText("Parametric EQ").assertDoesNotExist()
     }
 }
