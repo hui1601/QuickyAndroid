@@ -49,6 +49,19 @@ data class ProductMetadata(
     val features: ProductFeatures? = null
 )
 
+private val HEADSET_TITLE = Regex(
+    """\bH\d|headphone|headset""",
+    RegexOption.IGNORE_CASE
+)
+
+/**
+ * Over-ear QCY headsets (H2/H3/H4 family and explicit `… HEADSET` entries)
+ * report a single battery in the box/case slot and expose one product image
+ * instead of separate left/right earbud assets. TWS models such as HT08 do
+ * not match (`HT` is a different series).
+ */
+fun ProductMetadata.isHeadset(): Boolean = HEADSET_TITLE.containsMatchIn(title)
+
 @Serializable
 data class ProductFeatures(
     val anc: AncFeature? = null,

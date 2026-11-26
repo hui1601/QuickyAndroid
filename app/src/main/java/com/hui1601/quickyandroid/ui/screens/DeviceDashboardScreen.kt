@@ -129,6 +129,7 @@ import com.hui1601.quickyandroid.data.model.ProductMetadata
 import com.hui1601.quickyandroid.data.model.effectiveCmdId
 import com.hui1601.quickyandroid.data.model.findActiveAncMode
 import com.hui1601.quickyandroid.data.model.findSelectedSubItem
+import com.hui1601.quickyandroid.data.model.isHeadset
 import com.hui1601.quickyandroid.ui.components.QcyToggleCard
 import com.hui1601.quickyandroid.ui.theme.tabular
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
@@ -334,7 +335,8 @@ private fun DashboardContent(
                 BatterySection(
                     battery = settings.battery,
                     imageUrl = product?.leftImgUrl?.ifBlank { null }
-                        ?: product?.rightImgUrl?.ifBlank { null }
+                        ?: product?.rightImgUrl?.ifBlank { null },
+                    isHeadset = product?.isHeadset() == true
                 )
             }
 
@@ -581,33 +583,60 @@ private fun ProductHero(
                 .alpha(if (isConnected) 0.55f else 0.22f)
         )
 
+        val leftUrl = product?.leftImgUrl?.ifBlank { null }
+        val rightUrl = product?.rightImgUrl?.ifBlank { null }
+        // Headsets ship one product image; drawing it in both slots showed two
+        // identical headsets. Collapse whenever the catalog does not provide
+        // distinct left/right assets.
+        val showSingleImage = product?.isHeadset() == true ||
+            leftUrl == null || rightUrl == null || leftUrl == rightUrl
+        val singleImageUrl = leftUrl ?: rightUrl ?: product?.iconUrl?.ifBlank { null }
+
         Box(
             contentAlignment = Alignment.Center
         ) {
-            with(sharedTransitionScope) {
-                ProductImage(
-                    url = product?.leftImgUrl,
-                    size = imageSize,
-                    desc = "Left earbud",
-                    modifier = Modifier
-                        .offset(x = (-offsetX).dp)
-                        .sharedElement(
+            if (showSingleImage) {
+                with(sharedTransitionScope) {
+                    ProductImage(
+                        url = singleImageUrl,
+                        size = imageSize,
+                        desc = product?.title ?: "Device",
+                        modifier = Modifier.sharedElement(
                             rememberSharedContentState(key = "device-image-$connectedAddress"),
                             animatedVisibilityScope = animatedVisibilityScope,
                             boundsTransform = { _, _ ->
                                 tween<Rect>(durationMillis = 550, easing = QuickyMotion.EmphasizedDecelerate)
                             }
                         ),
-                    crossfade = false
+                        crossfade = false
+                    )
+                }
+            } else {
+                with(sharedTransitionScope) {
+                    ProductImage(
+                        url = leftUrl,
+                        size = imageSize,
+                        desc = "Left earbud",
+                        modifier = Modifier
+                            .offset(x = (-offsetX).dp)
+                            .sharedElement(
+                                rememberSharedContentState(key = "device-image-$connectedAddress"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = { _, _ ->
+                                    tween<Rect>(durationMillis = 550, easing = QuickyMotion.EmphasizedDecelerate)
+                                }
+                            ),
+                        crossfade = false
+                    )
+                }
+
+                ProductImage(
+                    url = rightUrl,
+                    size = imageSize,
+                    desc = "Right earbud",
+                    modifier = Modifier.offset(x = offsetX.dp)
                 )
             }
-
-            ProductImage(
-                url = product?.rightImgUrl,
-                size = imageSize,
-                desc = "Right earbud",
-                modifier = Modifier.offset(x = offsetX.dp)
-            )
         }
     }
 }
@@ -647,7 +676,7 @@ private fun ProductImage(
 }
 
 @Composable
-private fun BatterySection(battery: BatteryStatus, imageUrl: String?) {
+private fun BatterySection(battery: BatteryStatus, imageUrl: String?, isHeadset: Boolean) {
     val context = LocalContext.current
     val heroTint by produceState<Color?>(initialValue = null, imageUrl) {
         value = null
@@ -693,21 +722,38 @@ private fun BatterySection(battery: BatteryStatus, imageUrl: String?) {
                 .padding(horizontal = 8.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            BatteryBar(
-                level = battery.leftLevel,
-                charging = battery.leftCharging,
-                label = "L"
-            )
-            BatteryBar(
-                level = battery.caseLevel,
-                charging = battery.caseCharging,
-                label = "C"
-            )
-            BatteryBar(
-                level = battery.rightLevel,
-                charging = battery.rightCharging,
-                label = "R"
-            )
+            if (isHeadset) {
+                // A headset is one unit: its firmware puts the only level in
+                // the case slot (some models report it as left/right instead).
+                val reading = when {
+                    battery.caseLevel > 0 || battery.caseCharging ->
+                        battery.caseLevel to battery.caseCharging
+                    battery.leftLevel > 0 || battery.leftCharging ->
+                        battery.leftLevel to battery.leftCharging
+                    else -> battery.rightLevel to battery.rightCharging
+                }
+                BatteryBar(
+                    level = reading.first,
+                    charging = reading.second,
+                    label = "Battery"
+                )
+            } else {
+                BatteryBar(
+                    level = battery.leftLevel,
+                    charging = battery.leftCharging,
+                    label = "L"
+                )
+                BatteryBar(
+                    level = battery.caseLevel,
+                    charging = battery.caseCharging,
+                    label = "C"
+                )
+                BatteryBar(
+                    level = battery.rightLevel,
+                    charging = battery.rightCharging,
+                    label = "R"
+                )
+            }
         }
     }
 }
