@@ -51,6 +51,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -60,6 +61,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -73,6 +76,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -94,9 +98,12 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
+import com.hui1601.quickyandroid.data.parser.AutoEqProfile
+import com.hui1601.quickyandroid.ui.components.AutoEqImportSheet
 import com.hui1601.quickyandroid.ui.theme.tabular
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
 import com.hui1601.quickyandroid.ble.Protocol
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -165,6 +172,10 @@ fun EQScreen(
         if (!parametricSupported) view = EqView.SIMPLE
     }
 
+    var showAutoEqImport by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val motionScheme = MaterialTheme.motionScheme
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -186,7 +197,8 @@ fun EQScreen(
                 ),
                 scrollBehavior = scrollBehavior
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -254,7 +266,8 @@ fun EQScreen(
                         EqView.ADVANCED -> ParametricEqPane(
                             state = parametricState,
                             listState = advancedListState,
-                            scrollBehavior = scrollBehavior
+                            scrollBehavior = scrollBehavior,
+                            onImportAutoEq = { showAutoEqImport = true }
                         )
                     }
                 }
@@ -279,6 +292,24 @@ fun EQScreen(
                 )
             }
         }
+    }
+
+    if (showAutoEqImport) {
+        AutoEqImportSheet(
+            onDismiss = { showAutoEqImport = false },
+            onImported = { name: String, profile: AutoEqProfile ->
+                parametricState.preGainDb = profile.preGainDb
+                parametricState.bands = profile.bands
+                parametricState.selectedBand = 0
+                showAutoEqImport = false
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        "Imported $name (${profile.bands.size} filters). " +
+                            "Review the curve, then apply."
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -399,7 +430,8 @@ private fun SimpleEqPane(
 private fun ParametricEqPane(
     state: ParametricEqEditorState,
     listState: LazyListState,
-    scrollBehavior: TopAppBarScrollBehavior
+    scrollBehavior: TopAppBarScrollBehavior,
+    onImportAutoEq: () -> Unit
 ) {
     LazyColumn(
         state = listState,
@@ -409,7 +441,7 @@ private fun ParametricEqPane(
         // Bottom padding keeps the last band clear of the actions bar.
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp)
     ) {
-        item { CustomParametricEqSection(state = state) }
+        item { CustomParametricEqSection(state = state, onImportAutoEq = onImportAutoEq) }
     }
 }
 
@@ -486,7 +518,8 @@ internal class ParametricEqEditorState(
 
 @Composable
 internal fun CustomParametricEqSection(
-    state: ParametricEqEditorState = remember { ParametricEqEditorState() }
+    state: ParametricEqEditorState = remember { ParametricEqEditorState() },
+    onImportAutoEq: (() -> Unit)? = null
 ) {
     Column {
         Text(
@@ -502,6 +535,11 @@ internal fun CustomParametricEqSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (onImportAutoEq != null) {
+            AutoEqImportCard(onClick = onImportAutoEq)
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         ParametricBandGraphCard(
             bands = state.bands,
@@ -559,6 +597,41 @@ internal fun CustomParametricEqSection(
                     state.selectedBand = state.bands.lastIndex
                 }
             ) { Text("Add band (${state.bands.size}/${Protocol.EQ_MAX_BANDS})") }
+        }
+    }
+}
+
+@Composable
+private fun AutoEqImportCard(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "AutoEQ profile",
+                    style = MaterialTheme.typography.titleSmallEmphasized
+                )
+                Text(
+                    text = "Import measured filters from AutoEQ's headphone database.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            FilledTonalButton(onClick = onClick) {
+                Text("Import")
+            }
         }
     }
 }

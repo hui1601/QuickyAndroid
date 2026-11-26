@@ -40,6 +40,10 @@ Captured on an Android 36 emulator with the bundled **QCY MeloBuds Pro** catalog
     presets the retail app ships (firmware “custom-band unlock”,
     `catalog/EQ_PROTOCOL.md`); the section appears for standard-protocol
     connections and can read the live curve back (`0xFE 0x22`).
+  - **AutoEQ import** — search the AutoEQ result index or paste a
+    `ParametricEQ.txt` profile/URL into the Advanced editor. AutoEQ's
+    high-shelf filters become broad peaking bands because the firmware has
+    no high-shelf type; nothing is written until *Apply to device*.
   - Game Mode, Spatial Audio, LDAC, Adaptive EQ, Env Adaptation, Focus/Sleep Mode
   - Per-bud volume (L/R), LED indicator, LED effects
   - Wearing detection, Ear Tip Fit test
