@@ -2,6 +2,7 @@ package com.hui1601.quickyandroid.widget
 
 import com.hui1601.quickyandroid.ble.QcyGattClient
 import com.hui1601.quickyandroid.data.model.ProductMetadata
+import com.hui1601.quickyandroid.data.model.findActiveAncMode
 
 /** Widget-facing noise-control targets. */
 object WidgetAncMode {
@@ -22,10 +23,8 @@ object WidgetAncCommand {
         ancModeByte: Int
     ): Int {
         val modes = product?.features?.anc?.modes.orEmpty()
-        for (mode in modes) {
-            val start = mode.startCmdId ?: 0
-            val end = mode.endCmdId ?: start
-            if (selectedCmdId in start..end) return categoryOf(mode.name)
+        modes.findActiveAncMode(ancModeByte, selectedCmdId)?.let {
+            return categoryOf(it.name)
         }
         return when (ancModeByte) {
             0x00 -> WidgetAncMode.OFF

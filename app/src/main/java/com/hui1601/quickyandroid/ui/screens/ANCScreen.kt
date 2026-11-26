@@ -61,8 +61,11 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.hui1601.quickyandroid.data.model.AncItem
 import com.hui1601.quickyandroid.data.model.AncMode
+import com.hui1601.quickyandroid.data.model.effectiveCmdId
+import com.hui1601.quickyandroid.data.model.findActiveAncMode
+import com.hui1601.quickyandroid.data.model.findSelectedSubItem
+import com.hui1601.quickyandroid.data.model.isTransparencyMode
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,6 +81,11 @@ fun ANCScreen(
     LaunchedEffect(Unit) { deviceViewModel.refreshScreenState("anc") }
     val ancModes = product?.features?.anc?.modes ?: emptyList()
     val selectedCmdId = settings.selectedAncCmdId
+    // 0x0C notifications only carry the mode byte and do not refresh the
+    // selected command, so a stale ANC sub-mode must not decide the active
+    // top-level mode after an earbud-side switch to Transparency.
+    val activeMode = ancModes.findActiveAncMode(settings.ancMode, selectedCmdId)
+    val effectiveCmdId = activeMode?.effectiveCmdId(selectedCmdId) ?: selectedCmdId
 
     Scaffold(
         topBar = {
@@ -118,25 +126,19 @@ fun ANCScreen(
                 item {
                     AncModeButtonGroup(
                         modes = ancModes,
-                        selectedCmdId = selectedCmdId,
+                        selectedMode = activeMode,
                         onModeSelect = { deviceViewModel.setAncPacked(it) }
                     )
                 }
 
-                val selectedMode = ancModes.find { mode ->
-                    val s = mode.startCmdId ?: 0
-                    val e = mode.endCmdId ?: s
-                    selectedCmdId in s..e
-                }
-
-                // Sub-item chips belong to the active mode only. Rendering
-                // every mode with items showed ANC levels while Transparency
-                // was selected.
-                if (selectedMode != null && !selectedMode.items.isNullOrEmpty()) {
-                    item(key = "subitems_${selectedMode.name}") {
+                // Sub-item chips belong to the active mode only. The mode is
+                // resolved from the device-reported byte, so a stale selected
+                // command cannot keep ANC levels on screen in Transparency.
+                if (activeMode != null && !activeMode.items.isNullOrEmpty()) {
+                    item(key = "subitems_${activeMode.name}") {
                         AncSubItemsCard(
-                            mode = selectedMode,
-                            selectedCmdId = selectedCmdId,
+                            mode = activeMode,
+                            selectedCmdId = effectiveCmdId,
                             onSubItemClick = { cmdId ->
                                 deviceViewModel.setAncPacked(cmdId)
                             }
@@ -145,8 +147,7 @@ fun ANCScreen(
                 }
 
                 // Vocal Boost chip for transparency mode
-                val isTransparencySelected = selectedMode?.name?.contains("Transparency", ignoreCase = true) == true
-                        || selectedMode?.name?.contains("Aware", ignoreCase = true) == true
+                val isTransparencySelected = activeMode?.isTransparencyMode() == true
                 val isVocalBoostActive = settings.ancMode == 0x0E
 
                 if (isTransparencySelected || isVocalBoostActive) {
@@ -187,8 +188,9 @@ fun ANCScreen(
                     }
                 }
 
-                // Show intensity slider for the selected sub-item (or mode without sub-items)
-                val selectedSubItem = findSelectedSubItem(ancModes, selectedCmdId)
+                // Intensity slider for the active mode's selected sub-item,
+                // or for a mode that exposes its own range.
+                val selectedSubItem = activeMode?.findSelectedSubItem(effectiveCmdId)
                 if (selectedSubItem != null) {
                     val subStart = selectedSubItem.startCmdId ?: 0
                     val subEnd = selectedSubItem.endCmdId ?: subStart
@@ -198,27 +200,21 @@ fun ANCScreen(
                                 label = selectedSubItem.name,
                                 startCmd = subStart,
                                 endCmd = subEnd,
-                                currentValue = selectedCmdId.coerceIn(subStart, subEnd),
+                                currentValue = effectiveCmdId.coerceIn(subStart, subEnd),
                                 onValueChange = { deviceViewModel.setAncPacked(it) }
                             )
                         }
                     }
-                } else {
-                    // Mode without sub-items selected — check if mode itself has a range
-                    val selectedMode = ancModes.find { mode ->
-                        val s = mode.startCmdId ?: 0
-                        val e = mode.endCmdId ?: s
-                        selectedCmdId in s..e
-                    }
-                    val modeStart = selectedMode?.startCmdId ?: 0
-                    val modeEnd = selectedMode?.endCmdId ?: modeStart
-                    if (selectedMode != null && modeEnd > modeStart && selectedMode.items.isNullOrEmpty()) {
+                } else if (activeMode != null && activeMode.items.isNullOrEmpty()) {
+                    val modeStart = activeMode.startCmdId ?: 0
+                    val modeEnd = activeMode.endCmdId ?: modeStart
+                    if (modeEnd > modeStart) {
                         item {
                             NoiseDepthSlider(
-                                label = selectedMode.name,
+                                label = activeMode.name,
                                 startCmd = modeStart,
                                 endCmd = modeEnd,
-                                currentValue = selectedCmdId.coerceIn(modeStart, modeEnd),
+                                currentValue = effectiveCmdId.coerceIn(modeStart, modeEnd),
                                 onValueChange = { deviceViewModel.setAncPacked(it) }
                             )
                         }
@@ -228,7 +224,7 @@ fun ANCScreen(
                 // Device-reported ANC strength from the 0x07 read-back
                 // (settings.noiseValue) — shown when no JSON intensity slider
                 // applies, so the level is still visible.
-                if (settings.noiseValue > 0 && findSelectedSubItem(ancModes, selectedCmdId) == null) {
+                if (settings.noiseValue > 0 && selectedSubItem == null) {
                     item {
                         Text(
                             text = "Device ANC strength: ${settings.noiseValue}",
@@ -241,22 +237,6 @@ fun ANCScreen(
             }
         }
     }
-}
-
-/**
- * Find the sub-item (AncItem) that matches the selected cmdId.
- */
-private fun findSelectedSubItem(modes: List<AncMode>, selectedCmdId: Int): AncItem? {
-    for (mode in modes) {
-        for (sub in mode.items ?: emptyList()) {
-            val start = sub.startCmdId ?: 0
-            val end = sub.endCmdId ?: start
-            if (selectedCmdId in start..end) {
-                return sub
-            }
-        }
-    }
-    return null
 }
 
 @Composable
@@ -297,7 +277,7 @@ private fun BasicModeSelector(
 @Composable
 private fun AncModeButtonGroup(
     modes: List<AncMode>,
-    selectedCmdId: Int,
+    selectedMode: AncMode?,
     onModeSelect: (Int) -> Unit
 ) {
     ButtonGroup(
@@ -306,10 +286,8 @@ private fun AncModeButtonGroup(
     ) {
         modes.forEach { mode ->
             val modeStart = mode.startCmdId ?: 0
-            val modeEnd = mode.endCmdId ?: modeStart
             toggleableItem(
-                // A mode is selected if the current cmdId falls within its range
-                checked = selectedCmdId in modeStart..modeEnd,
+                checked = mode.name == selectedMode?.name,
                 onCheckedChange = {
                     // Send the mode's default cmd on activation; re-taps are no-ops
                     // and sub-item chips below refine the sub-mode

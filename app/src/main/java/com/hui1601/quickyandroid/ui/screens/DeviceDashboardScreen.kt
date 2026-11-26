@@ -126,6 +126,9 @@ import com.hui1601.quickyandroid.data.model.BatteryStatus
 import com.hui1601.quickyandroid.data.model.ConnectionState
 import com.hui1601.quickyandroid.data.model.DeviceSettings
 import com.hui1601.quickyandroid.data.model.ProductMetadata
+import com.hui1601.quickyandroid.data.model.effectiveCmdId
+import com.hui1601.quickyandroid.data.model.findActiveAncMode
+import com.hui1601.quickyandroid.data.model.findSelectedSubItem
 import com.hui1601.quickyandroid.ui.components.QcyToggleCard
 import com.hui1601.quickyandroid.ui.theme.tabular
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
@@ -918,22 +921,15 @@ private fun resolveAncSubtitle(product: ProductMetadata?, settings: DeviceSettin
 
     val ancModes = product?.features?.anc?.modes
     if (!ancModes.isNullOrEmpty()) {
-        val cmdId = settings.selectedAncCmdId
-        if (cmdId > 0) {
-            // Find matching sub-item first
-            for (mode in ancModes) {
-                for (sub in mode.items ?: emptyList()) {
-                    val s = sub.startCmdId ?: 0
-                    val e = sub.endCmdId ?: s
-                    if (cmdId in s..e) return sub.name
-                }
-            }
-            // Fall back to matching mode
-            for (mode in ancModes) {
-                val s = mode.startCmdId ?: 0
-                val e = mode.endCmdId ?: s
-                if (cmdId in s..e) return mode.name
-            }
+        // Resolve the mode from the device-reported byte first: the selected
+        // command goes stale when noise control changes on the earbuds.
+        val activeMode = ancModes.findActiveAncMode(
+            settings.ancMode,
+            settings.selectedAncCmdId
+        )
+        if (activeMode != null) {
+            val cmdId = activeMode.effectiveCmdId(settings.selectedAncCmdId)
+            return activeMode.findSelectedSubItem(cmdId)?.name ?: activeMode.name
         }
     }
 
