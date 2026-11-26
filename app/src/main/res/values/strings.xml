@@ -18,7 +18,7 @@
     <string name="widget_status_connected">Connected</string>
     <string name="widget_status_connecting">Connecting…</string>
     <string name="widget_status_disconnected">Not connected</string>
-    <string name="widget_label_left">LEFT</string>
-    <string name="widget_label_right">RIGHT</string>
-    <string name="widget_label_case">CASE</string>
+    <string name="widget_label_left_short">L</string>
+    <string name="widget_label_right_short">R</string>
+    <string name="widget_label_case_short">C</string>
 </resources>

@@ -182,7 +182,7 @@ object DeviceWidgetStore {
         ids.forEach { id ->
             manager.updateAppWidget(
                 id,
-                DeviceWidgetProvider.buildRemoteViews(context, resolveState(context, id))
+                DeviceWidgetProvider.buildRemoteViews(context, resolveState(context, id), id)
             )
         }
     }

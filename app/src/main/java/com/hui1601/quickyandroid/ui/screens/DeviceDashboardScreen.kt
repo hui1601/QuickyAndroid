@@ -12,6 +12,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import com.hui1601.quickyandroid.ui.components.QcyLottie
 import com.hui1601.quickyandroid.ui.theme.QuickyMotion
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -137,6 +138,7 @@ fun DeviceDashboardScreen(
     deviceViewModel: DeviceViewModel,
     onBack: (() -> Unit)?,
     onDevices: () -> Unit,
+    onAppSettings: () -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
@@ -199,6 +201,7 @@ fun DeviceDashboardScreen(
                 animatedVisibilityScope = animatedVisibilityScope,
                 onBack = onBack,
                 onDevices = onDevices,
+                onAppSettings = onAppSettings,
                 onReconnect = { deviceViewModel.reconnect() },
                 onFeatureClick = { id ->
                     when (id) {
@@ -238,6 +241,7 @@ private fun DashboardContent(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBack: (() -> Unit)?,
     onDevices: () -> Unit,
+    onAppSettings: () -> Unit,
     onReconnect: () -> Unit,
     onFeatureClick: (String) -> Unit,
     onMusicControl: (Byte) -> Unit
@@ -270,6 +274,12 @@ private fun DashboardContent(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onAppSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "App settings"
+                        )
+                    }
                     FilledTonalIconButton(onClick = onDevices) {
                         Icon(
                             Icons.Default.DevicesOther,
@@ -469,11 +479,11 @@ private fun ConnectionPill(isConnected: Boolean, isConnecting: Boolean) {
             label = "connPillIcon"
         ) { s ->
             when (s) {
-                "connected" -> Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.tertiary
+                "connected" -> QcyLottie(
+                    asset = "lottie/connected_check.json",
+                    modifier = Modifier.size(20.dp),
+                    accent = MaterialTheme.colorScheme.tertiary,
+                    iterations = 1
                 )
                 "connecting" -> Box(
                     modifier = Modifier
@@ -559,6 +569,13 @@ private fun ProductHero(
                 center = glowCenter
             )
         }
+
+        QcyLottie(
+            asset = "lottie/hero_rings.json",
+            modifier = Modifier
+                .size(300.dp)
+                .alpha(if (isConnected) 0.55f else 0.22f)
+        )
 
         Box(
             contentAlignment = Alignment.Center

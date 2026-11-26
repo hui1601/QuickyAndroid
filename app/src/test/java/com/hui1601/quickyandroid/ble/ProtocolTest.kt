@@ -497,6 +497,32 @@ class ProtocolTest {
         assertEquals(null, Protocol.EqFilterType.fromWire(9))
     }
 
+    @Test
+    fun `parses firmware 20-slot EQ read-back and exposes 10 active bands`() {
+        // DataBean_ReadMultieqState (0x34195682) always returns 20 records,
+        // with inactive slots encoded as freq == 0.
+        val params = ByteArray(3 + 20 * 7)
+        params[0] = 2 // preset type
+        for (i in 0 until 10) {
+            val o = 3 + i * 7
+            val freq = 100 * (i + 1)
+            val gain = i * 100
+            params[o] = (freq and 0xFF).toByte()
+            params[o + 1] = ((freq shr 8) and 0xFF).toByte()
+            params[o + 2] = (gain and 0xFF).toByte()
+            params[o + 3] = ((gain shr 8) and 0xFF).toByte()
+            params[o + 4] = 0x64 // Q 1.00
+            params[o + 5] = 0
+            params[o + 6] = Protocol.EqFilterType.PEAKING.wireValue.toByte()
+        }
+
+        val parsed = Protocol.parseParametricEq(0x22, params)!!
+        assertEquals(20, parsed.bands.size)
+        val active = parsed.bands.filter { it.freq > 0 }
+        assertEquals(10, active.size)
+        assertEquals((0 until 10).map { it.toFloat() }, active.map { it.gainDb })
+    }
+
     // ── alarm / music builders (AlarmDataBean + setMusicStatus/Info) ──
 
     @Test

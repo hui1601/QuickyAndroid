@@ -82,16 +82,15 @@ fun EQScreen(
 
     var selectedPreset by remember { mutableStateOf(settings.eqPreset) }
     var bandValues by remember(bandCount) {
-        mutableStateOf(settings.eqBandGains.takeIf { it.size == bandCount }
-            ?: List(bandCount) { 0f }.toMutableList())
+        mutableStateOf(projectEqGains(settings.eqBandGains, bandCount).toMutableList())
     }
 
     LaunchedEffect(settings.eqPreset) {
         selectedPreset = settings.eqPreset
     }
     LaunchedEffect(settings.eqBandGains, bandCount) {
-        if (settings.eqBandGains.size == bandCount) {
-            bandValues = settings.eqBandGains.toMutableList()
+        if (settings.eqBandGains.isNotEmpty()) {
+            bandValues = projectEqGains(settings.eqBandGains, bandCount).toMutableList()
         }
     }
 
@@ -360,6 +359,24 @@ private fun CustomBandCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * Fit a device EQ read-back to the product's fixed band count.
+ *
+ * The HT18 firmware answers `0xFE 0x22` with all 20 preset slots (inactive
+ * slots have freq == 0), while most products expose 10 UI bands. The old
+ * `size == bandCount` check silently discarded the whole read-back in that
+ * case, leaving the EQ screen on its default zeros. Trim extra slots and pad
+ * missing ones with 0 dB instead.
+ */
+internal fun projectEqGains(gains: List<Float>, bandCount: Int): List<Float> {
+    if (bandCount <= 0) return emptyList()
+    return when {
+        gains.size == bandCount -> gains
+        gains.size > bandCount -> gains.take(bandCount)
+        else -> gains + List(bandCount - gains.size) { 0f }
     }
 }
 

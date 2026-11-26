@@ -849,14 +849,12 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                         else -> Unit // Wuqi EQ info response is not decoded
                     }
                     delay(60)
-                    send(0xFE.toByte(), byteArrayOf(0x20.toByte()))
-                    delay(60)
+                    // 0xFE 0x22 is the only EQ read whose response the UI can
+                    // consume: the firmware answers 0x22/0x46/0x47 with the
+                    // same cmd byte (DataBean_ReadMultieqState hardcodes 0x22),
+                    // so sending the per-side reads here would let the last
+                    // reply overwrite the displayed curve with the other side.
                     send(0xFE.toByte(), byteArrayOf(0x22.toByte()))
-                    delay(60)
-                    // Per-side EQ presets (firmware-verified 0xFE reads)
-                    send(0xFE.toByte(), byteArrayOf(0x46.toByte()))
-                    delay(60)
-                    send(0xFE.toByte(), byteArrayOf(0x47.toByte()))
                 }
                 "anc" -> {
                     send(0xFE.toByte(), byteArrayOf(0x0C.toByte()))
@@ -1349,11 +1347,17 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                 // Parametric EQ response: [eqType, masterGainLo, masterGainHi, bands...]
                 val parsed = Protocol.parseParametricEq(cmdId, params)
                 if (parsed != null) {
+                    // The firmware read-back always returns all 20 preset
+                    // slots; inactive slots are encoded as freq == 0. Drop
+                    // them so the UI does not receive a 20-entry list on a
+                    // 10-band product (which previously made the screen keep
+                    // its default zeros).
+                    val activeBands = parsed.bands.filter { it.freq > 0 }
                     _settings.update {
                         it.copy(
                             eqPreset = parsed.eqIndex,
-                            eqBandGains = parsed.bands.map { band -> band.gainDb },
-                            eqParametricBands = parsed.bands,
+                            eqBandGains = activeBands.map { band -> band.gainDb },
+                            eqParametricBands = activeBands,
                             eqPreGainDb = parsed.masterGainDb
                         )
                     }

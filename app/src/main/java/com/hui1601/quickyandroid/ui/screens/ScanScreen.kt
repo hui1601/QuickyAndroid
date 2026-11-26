@@ -32,7 +32,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,8 +39,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -76,7 +74,6 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.core.view.WindowCompat
@@ -97,11 +94,8 @@ import com.hui1601.quickyandroid.util.WindowSizeClass
 @Composable
 fun ScanScreen(
     viewModel: ScanViewModel,
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
+    onSettings: () -> Unit,
     onDeviceClick: (ScannedDevice) -> Unit,
-    dynamicColor: Boolean,
-    onDynamicColorChange: (Boolean) -> Unit,
     savedDevices: List<SavedDevice>,
     connectionState: ConnectionState,
     onBack: (() -> Unit)? = null,
@@ -129,9 +123,10 @@ fun ScanScreen(
     SideEffect {
         insetsController?.isAppearanceLightStatusBars = lightStatusBar
     }
-    DisposableEffect(insetsController) {
+    val appBackgroundIsDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    DisposableEffect(insetsController, appBackgroundIsDark) {
         onDispose {
-            insetsController?.isAppearanceLightStatusBars = !isDarkTheme
+            insetsController?.isAppearanceLightStatusBars = !appBackgroundIsDark
         }
     }
 
@@ -161,8 +156,7 @@ fun ScanScreen(
     Scaffold(
         topBar = {
             ScanHeader(
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme,
+                onSettings = onSettings,
                 onClose = onBack
             )
         },
@@ -180,26 +174,6 @@ fun ScanScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .toggleable(
-                            value = dynamicColor,
-                            role = Role.Switch,
-                            onValueChange = onDynamicColorChange
-                        )
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Wallpaper colors",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Switch(checked = dynamicColor, onCheckedChange = null)
-                }
-            }
             when {
                 scanError != null && devices.isEmpty() -> {
                     ScanErrorState(
@@ -364,8 +338,7 @@ private fun ScanErrorState(
 
 @Composable
 private fun ScanHeader(
-    isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit,
+    onSettings: () -> Unit,
     onClose: (() -> Unit)?
 ) {
     Surface(
@@ -394,10 +367,10 @@ private fun ScanHeader(
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onToggleTheme) {
+                IconButton(onClick = onSettings) {
                     Icon(
-                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = "Toggle theme"
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "App settings"
                     )
                 }
                 if (onClose != null) {

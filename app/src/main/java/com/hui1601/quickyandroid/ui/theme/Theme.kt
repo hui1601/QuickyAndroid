@@ -94,6 +94,7 @@ private val DarkColorScheme = darkColorScheme(
 fun QuickyAndroidTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
+    palette: ThemePalette = ThemePalette.QCY,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -101,8 +102,8 @@ fun QuickyAndroidTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> palette.applyTo(DarkColorScheme, dark = true)
+        else -> palette.applyTo(LightColorScheme, dark = false)
     }
 
     val view = LocalView.current

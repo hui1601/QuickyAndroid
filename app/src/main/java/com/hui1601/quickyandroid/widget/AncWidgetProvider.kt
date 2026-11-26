@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
@@ -36,6 +37,18 @@ class AncWidgetProvider : AppWidgetProvider() {
         super.onDeleted(context, appWidgetIds)
     }
 
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle
+    ) {
+        appWidgetManager.updateAppWidget(
+            appWidgetId,
+            buildRemoteViews(context, DeviceWidgetStore.resolveState(context, appWidgetId), appWidgetId)
+        )
+    }
+
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == AncWidgetService.ACTION_SET) {
@@ -54,6 +67,9 @@ class AncWidgetProvider : AppWidgetProvider() {
             state: DeviceWidgetState,
             appWidgetId: Int
         ): RemoteViews {
+            if (isCompact(context, appWidgetId)) {
+                return buildCompactRemoteViews(context, state, appWidgetId)
+            }
             val views = RemoteViews(context.packageName, R.layout.widget_anc)
             views.setOnClickPendingIntent(R.id.widget_anc_root, appPendingIntent(context))
 
@@ -69,6 +85,7 @@ class AncWidgetProvider : AppWidgetProvider() {
             views.setImageViewResource(R.id.widget_anc_dot, dot)
 
             val selected = state.ancSelected ?: WidgetAncMode.OFF
+            views.setImageViewResource(R.id.widget_anc_header_icon, modeIcon(selected))
             // null binding = "current / last connected", so the command must
             // follow the live link (and update the global snapshot), not be
             // pinned to whatever address happened to be rendered.
@@ -105,6 +122,76 @@ class AncWidgetProvider : AppWidgetProvider() {
             return views
         }
 
+        private fun isCompact(context: Context, appWidgetId: Int): Boolean {
+            val manager = AppWidgetManager.getInstance(context) ?: return false
+            val options = manager.getAppWidgetOptions(appWidgetId) ?: return false
+            val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+            return height in 1..129
+        }
+
+        private fun buildCompactRemoteViews(
+            context: Context,
+            state: DeviceWidgetState,
+            appWidgetId: Int
+        ): RemoteViews {
+            val views = RemoteViews(context.packageName, R.layout.widget_anc_compact)
+            views.setOnClickPendingIntent(R.id.widget_anc_root, appPendingIntent(context))
+            val deviceName = state.deviceName.ifBlank { context.getString(R.string.app_name) }
+            views.setTextViewText(R.id.widget_anc_compact_device, deviceName)
+            val selected = state.ancSelected ?: WidgetAncMode.OFF
+            views.setImageViewResource(R.id.widget_anc_compact_icon, modeIcon(selected))
+            val manager = AppWidgetManager.getInstance(context)
+            val options = manager?.getAppWidgetOptions(appWidgetId)
+            val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0) ?: 0
+            val height = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0) ?: 0
+            val roomy = width >= 110 || height >= 100
+            views.setTextViewTextSize(
+                R.id.widget_anc_compact_device,
+                android.util.TypedValue.COMPLEX_UNIT_SP,
+                if (roomy) 14f else 11f
+            )
+            views.setTextViewTextSize(
+                R.id.widget_anc_compact_mode,
+                android.util.TypedValue.COMPLEX_UNIT_SP,
+                if (roomy) 20f else 15f
+            )
+            if (state.ancAvailable == false) {
+                views.setTextViewText(
+                    R.id.widget_anc_compact_mode,
+                    context.getString(R.string.widget_anc_unavailable)
+                )
+                return views
+            }
+            val next = when (selected) {
+                WidgetAncMode.OFF -> WidgetAncMode.ANC
+                WidgetAncMode.ANC -> WidgetAncMode.TRANSPARENCY
+                else -> WidgetAncMode.OFF
+            }
+            views.setTextViewText(
+                R.id.widget_anc_compact_mode,
+                modeLabel(context, selected)
+            )
+            val address = WidgetBindingStore.get(context, appWidgetId).address
+            views.setOnClickPendingIntent(
+                R.id.widget_anc_compact_button,
+                chipPendingIntent(context, appWidgetId, next, address)
+            )
+            views.setContentDescription(
+                R.id.widget_anc_compact_button,
+                deviceName + ", " + context.getString(R.string.widget_anc_title) + ": " +
+                    modeLabel(context, selected)
+            )
+            return views
+        }
+
+        private fun modeLabel(context: Context, mode: Int): String = context.getString(
+            when (mode) {
+                WidgetAncMode.OFF -> R.string.widget_anc_off
+                WidgetAncMode.ANC -> R.string.widget_anc_anc
+                else -> R.string.widget_anc_transparency
+            }
+        )
+
         private fun bindChip(
             views: RemoteViews,
             context: Context,
@@ -120,6 +207,13 @@ class AncWidgetProvider : AppWidgetProvider() {
                 "setBackgroundResource",
                 if (active) R.drawable.widget_anc_chip_active else R.drawable.widget_anc_chip_inactive
             )
+            views.setTextViewCompoundDrawables(
+                viewId,
+                0,
+                if (active) modeIconDark(target) else modeIcon(target),
+                0,
+                0
+            )
             views.setTextColor(
                 viewId,
                 ContextCompat.getColor(
@@ -131,6 +225,18 @@ class AncWidgetProvider : AppWidgetProvider() {
                 viewId,
                 chipPendingIntent(context, appWidgetId, target, address)
             )
+        }
+
+        private fun modeIcon(mode: Int): Int = when (mode) {
+            WidgetAncMode.OFF -> R.drawable.widget_mode_off
+            WidgetAncMode.ANC -> R.drawable.widget_mode_anc
+            else -> R.drawable.widget_mode_transparency
+        }
+
+        private fun modeIconDark(mode: Int): Int = when (mode) {
+            WidgetAncMode.OFF -> R.drawable.widget_mode_off_dark
+            WidgetAncMode.ANC -> R.drawable.widget_mode_anc_dark
+            else -> R.drawable.widget_mode_transparency_dark
         }
 
         private fun chipPendingIntent(

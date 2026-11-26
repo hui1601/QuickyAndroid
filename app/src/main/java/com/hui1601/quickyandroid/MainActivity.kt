@@ -50,10 +50,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil3.imageLoader
 import coil3.request.ImageRequest
+import com.hui1601.quickyandroid.ui.screens.AppThemeMode
 import com.hui1601.quickyandroid.ui.screens.DeviceDashboardScreen
 import com.hui1601.quickyandroid.ui.screens.DevicesScreen
+import com.hui1601.quickyandroid.ui.screens.GlobalSettingsScreen
 import com.hui1601.quickyandroid.ui.screens.ScanScreen
 import com.hui1601.quickyandroid.ui.theme.QuickyAndroidTheme
+import com.hui1601.quickyandroid.ui.theme.ThemePalette
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
 import com.hui1601.quickyandroid.ui.viewmodel.ScanViewModel
 import com.hui1601.quickyandroid.util.ThemeSettings
@@ -139,6 +142,8 @@ fun QuickyApp() {
     val followSystem by themeSettings.followSystem.collectAsState(initial = true)
     val darkMode by themeSettings.darkMode.collectAsState(initial = null)
     val dynamicColor by themeSettings.dynamicColor.collectAsState(initial = false)
+    val colorTheme by themeSettings.colorTheme.collectAsState(initial = "qcy")
+    val palette = remember(colorTheme) { ThemePalette.fromId(colorTheme) }
     val isSystemDark = isSystemInDarkTheme()
 
     val isDarkTheme = when {
@@ -157,7 +162,11 @@ fun QuickyApp() {
         }
     }
 
-    QuickyAndroidTheme(darkTheme = isDarkTheme, dynamicColor = dynamicColor) {
+    QuickyAndroidTheme(
+        darkTheme = isDarkTheme,
+        dynamicColor = dynamicColor,
+        palette = palette
+    ) {
         if (!savedDevicesLoaded) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
@@ -256,15 +265,8 @@ fun QuickyApp() {
                     composable("scan") {
                         ScanScreen(
                             viewModel = scanViewModel,
-                            isDarkTheme = isDarkTheme,
-                            onToggleTheme = {
-                                scope.launch {
-                                    themeSettings.setDarkMode(!isDarkTheme)
-                                }
-                            },
-                            dynamicColor = dynamicColor,
-                            onDynamicColorChange = { enabled ->
-                                scope.launch { themeSettings.setDynamicColor(enabled) }
+                            onSettings = {
+                                navController.navigate("app_settings") { launchSingleTop = true }
                             },
                             savedDevices = savedDevices,
                             connectionState = connectionState,
@@ -315,6 +317,9 @@ fun QuickyApp() {
                             onDevices = {
                                 navController.navigate("devices") { launchSingleTop = true }
                             },
+                            onAppSettings = {
+                                navController.navigate("app_settings") { launchSingleTop = true }
+                            },
                             sharedTransitionScope = this@SharedTransitionLayout,
                             animatedVisibilityScope = this@composable
                         )
@@ -350,6 +355,41 @@ fun QuickyApp() {
                                     deviceViewModel.disconnect()
                                 }
                             }
+                        )
+                    }
+                    composable(
+                        "app_settings",
+                        enterTransition = { enterTransition },
+                        exitTransition = { exitTransition },
+                        popEnterTransition = { popEnterTransition },
+                        popExitTransition = { popExitTransition }
+                    ) {
+                        GlobalSettingsScreen(
+                            followSystem = followSystem,
+                            darkMode = darkMode,
+                            dynamicColor = dynamicColor,
+                            colorTheme = colorTheme,
+                            onSelectThemeMode = { mode ->
+                                scope.launch {
+                                    when (mode) {
+                                        AppThemeMode.SYSTEM -> themeSettings.setFollowSystem(true)
+                                        AppThemeMode.LIGHT -> themeSettings.setDarkMode(false)
+                                        AppThemeMode.DARK -> themeSettings.setDarkMode(true)
+                                    }
+                                }
+                            },
+                            onDynamicColorChange = { enabled ->
+                                scope.launch { themeSettings.setDynamicColor(enabled) }
+                            },
+                            onColorThemeChange = { id ->
+                                scope.launch {
+                                    themeSettings.setColorTheme(id)
+                                    // A concrete palette only takes effect once
+                                    // wallpaper colors are off.
+                                    themeSettings.setDynamicColor(false)
+                                }
+                            },
+                            onBack = { navController.popBackStack() }
                         )
                     }
                 }

@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import com.hui1601.quickyandroid.MainActivity
@@ -22,7 +23,7 @@ class DeviceWidgetProvider : AppWidgetProvider() {
         appWidgetIds.forEach { id ->
             appWidgetManager.updateAppWidget(
                 id,
-                buildRemoteViews(context, DeviceWidgetStore.resolveState(context, id))
+                buildRemoteViews(context, DeviceWidgetStore.resolveState(context, id), id)
             )
         }
     }
@@ -32,8 +33,20 @@ class DeviceWidgetProvider : AppWidgetProvider() {
         super.onDeleted(context, appWidgetIds)
     }
 
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle
+    ) {
+        appWidgetManager.updateAppWidget(
+            appWidgetId,
+            buildRemoteViews(context, DeviceWidgetStore.resolveState(context, appWidgetId), appWidgetId)
+        )
+    }
+
     companion object {
-        fun buildRemoteViews(context: Context, state: DeviceWidgetState): RemoteViews {
+        fun buildRemoteViews(context: Context, state: DeviceWidgetState, appWidgetId: Int): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_device)
 
             val launchIntent = Intent(context, MainActivity::class.java)
@@ -45,7 +58,7 @@ class DeviceWidgetProvider : AppWidgetProvider() {
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
-
+            applyLayoutScale(context, views, appWidgetId)
             if (state.connected) {
                 views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_status_connected))
                 views.setImageViewResource(R.id.widget_status_dot, R.drawable.widget_dot_connected)
@@ -67,11 +80,44 @@ class DeviceWidgetProvider : AppWidgetProvider() {
             val hasBattery = !state.battery.isEmpty()
             views.setViewVisibility(R.id.widget_battery_row, if (hasBattery) View.VISIBLE else View.GONE)
             if (hasBattery) {
-                bindBattery(views, R.id.widget_left_value, R.id.widget_left_bar, state.battery, Cell.LEFT)
-                bindBattery(views, R.id.widget_right_value, R.id.widget_right_bar, state.battery, Cell.RIGHT)
-                bindBattery(views, R.id.widget_case_value, R.id.widget_case_bar, state.battery, Cell.CASE)
+                bindAllBattery(views, state.battery)
             }
             return views
+        }
+
+        private fun bindAllBattery(views: RemoteViews, battery: BatteryStatus) {
+            bindBattery(views, R.id.widget_left_value, R.id.widget_left_bar, battery, Cell.LEFT)
+            bindBattery(views, R.id.widget_right_value, R.id.widget_right_bar, battery, Cell.RIGHT)
+            bindBattery(views, R.id.widget_case_value, R.id.widget_case_bar, battery, Cell.CASE)
+        }
+
+        private fun applyLayoutScale(context: Context, views: RemoteViews, appWidgetId: Int) {
+            val manager = AppWidgetManager.getInstance(context) ?: return
+            val options = manager.getAppWidgetOptions(appWidgetId) ?: return
+            val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+            val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+            val short = height in 1..129
+            views.setViewVisibility(R.id.widget_header, if (short) View.GONE else View.VISIBLE)
+            var scale = when {
+                short -> 0.55f
+                height >= 220 -> 1.08f
+                else -> 1f
+            }
+            if (width in 1..199) scale *= 0.85f
+            val sizes = mapOf(
+                R.id.widget_status to 24f,
+                R.id.widget_left_label to 22f,
+                R.id.widget_right_label to 22f,
+                R.id.widget_case_label to 22f,
+                R.id.widget_left_value to 24f,
+                R.id.widget_right_value to 24f,
+                R.id.widget_case_value to 24f
+            )
+            sizes.forEach { (id, base) ->
+                views.setTextViewTextSize(id, TypedValue.COMPLEX_UNIT_SP, base * scale)
+            }
+            val nameSp = if (width in 1..199) 18f else 30f * scale
+            views.setTextViewTextSize(R.id.widget_device_name, TypedValue.COMPLEX_UNIT_SP, nameSp)
         }
 
         private enum class Cell { LEFT, RIGHT, CASE }
