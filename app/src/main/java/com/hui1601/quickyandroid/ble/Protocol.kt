@@ -1,6 +1,7 @@
 package com.hui1601.quickyandroid.ble
 
 import java.util.UUID
+import kotlin.math.roundToInt
 
 object Protocol {
 
@@ -332,6 +333,84 @@ object Protocol {
      * pre-gain (preset id) dB*100 s16LE, then 7-byte band records. */
     fun buildCustomEqBody(preGainDb: Float, bands: List<EqBand>): ByteArray =
         buildParametricEqBody(0x22.toByte(), EQ_CUSTOM_PRESET_TYPE, preGainDb, sanitizeEqBands(bands))
+
+    // ── BES2300P / QCY H4 EQ (cmd 0x20, 125-byte packet) ──────────────
+    // Reverse-engineered from /data/reversing/qcy-h4/QCY-H4-EQ-analysis.md.
+    // The firmware stores mode as opaque data and forces every band to a
+    // peaking biquad; the host must send explicit gains.
+
+    /** Marker stored on [com.hui1601.quickyandroid.data.model.EqFeature.protocol]. */
+    const val EQ_PROTOCOL_BES_0X20 = "bes0x20"
+
+    /** SET_EQ_SETTING is a fixed 125-byte BLE value (5-byte header + 20*6). */
+    const val BES_EQ_PACKET_SIZE = 125
+
+    /** Flat 10-band template from the H4 0.9.2 firmware (31.25 Hz–16 kHz). */
+    val BES_EQ_FREQUENCIES = intArrayOf(31, 62, 125, 250, 500, 1_000, 2_000, 4_000, 8_000, 16_000)
+
+    /** Fixed Q values of the same template. */
+    val BES_EQ_Q = floatArrayOf(1.5f, 1.5f, 1.5f, 1.5f, 2f, 3f, 3f, 3f, 3f, 3f)
+
+    /**
+     * Build a H4 SET_EQ_SETTING value:
+     * `[0x20, reserved, mode, preamp s16LE (dB*100), (freq u16, gain s16, q u16) * 20]`.
+     * Unused band slots remain zero; the firmware stops at the first freq == 0.
+     */
+    fun buildBesEqSetting(presetId: Int, preGainDb: Float, bands: List<EqBand>): ByteArray {
+        val out = ByteArray(BES_EQ_PACKET_SIZE)
+        out[0] = 0x20
+        out[1] = 0
+        out[2] = (presetId and 0xFF).toByte()
+        putLe16(out, 3, (preGainDb * 100f).roundToInt())
+        bands.take(EQ_MAX_BANDS).forEachIndexed { index, band ->
+            val offset = 5 + index * 6
+            putLe16(out, offset, band.freq)
+            putLe16(out, offset + 2, (band.gainDb * 100f).roundToInt())
+            putLe16(out, offset + 4, (band.q * 100f).roundToInt())
+        }
+        return out
+    }
+
+    /** Parse GET_EQ_SETTING: `FF 7D 20 7B mode preamp bands[6B]` (127 bytes). */
+    fun parseBesEqSetting(value: ByteArray): ParametricEq? {
+        if (value.size < 7 ||
+            value[0] != 0xFF.toByte() ||
+            value[1] != 0x7D.toByte() ||
+            value[2] != 0x20.toByte() ||
+            value[3] != 0x7B.toByte()
+        ) {
+            return null
+        }
+        val mode = value[4].toInt() and 0xFF
+        val preGainDb = signedLe16(value, 5) / 100f
+        val bands = mutableListOf<EqBand>()
+        var offset = 7
+        while (offset + 6 <= value.size && bands.size < EQ_MAX_BANDS) {
+            val freq = le16(value, offset)
+            if (freq == 0) break
+            bands += EqBand(
+                freq = freq,
+                gainDb = signedLe16(value, offset + 2) / 100f,
+                q = le16(value, offset + 4) / 100f,
+                bandType = EqFilterType.PEAKING.wireValue
+            )
+            offset += 6
+        }
+        return if (bands.isEmpty()) null else ParametricEq(mode, preGainDb, bands)
+    }
+
+    private fun putLe16(out: ByteArray, offset: Int, value: Int) {
+        out[offset] = (value and 0xFF).toByte()
+        out[offset + 1] = ((value shr 8) and 0xFF).toByte()
+    }
+
+    private fun le16(data: ByteArray, offset: Int): Int =
+        (data[offset].toInt() and 0xFF) or ((data[offset + 1].toInt() and 0xFF) shl 8)
+
+    private fun signedLe16(data: ByteArray, offset: Int): Int {
+        val raw = le16(data, offset)
+        return if (raw >= 0x8000) raw - 0x10000 else raw
+    }
 
     // ── Key function helpers ──────────────────────────────────────
 

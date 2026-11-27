@@ -627,12 +627,23 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
      * 0x22 with the custom preset type (catalog/EQ_PROTOCOL.md — the retail
      * app only sends fixed 10-band presets).
      */
+    private fun activeEqProtocol(): String? =
+        _product.value?.features?.eq?.protocol?.takeIf { it.isNotBlank() }
+
     fun setParametricEq(preGainDb: Float, bands: List<Protocol.EqBand>) {
         val client = getActiveClient()
         if (client !is QcyGattClient) return
         val sanitized = Protocol.sanitizeEqBands(bands)
         if (sanitized.isEmpty()) return
-        if (client.sendCommand(0x22.toByte(), Protocol.buildCustomEqBody(preGainDb, sanitized))) {
+        val sent = if (activeEqProtocol() == Protocol.EQ_PROTOCOL_BES_0X20) {
+            // H4/BES2300P: explicit 10–20 band packet on the EQ characteristic.
+            client.writeEQ(
+                Protocol.buildBesEqSetting(Protocol.EQ_CUSTOM_PRESET_TYPE, preGainDb, sanitized)
+            )
+        } else {
+            client.sendCommand(0x22.toByte(), Protocol.buildCustomEqBody(preGainDb, sanitized))
+        }
+        if (sent) {
             _settings.update {
                 it.copy(
                     eqPreset = Protocol.EQ_CUSTOM_PRESET_TYPE,
@@ -640,13 +651,18 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     eqPreGainDb = preGainDb,
                     eqBandGains = sanitized.map { band -> band.gainDb }
                 )
-        }
+            }
         }
     }
 
-    /** Read back the full parametric EQ (0xFE sub-read 0x22 — accepted by
-     * the firmware’s sub-dispatch). */
+    /** Read back the full parametric EQ. The DataBean path uses 0xFE 0x22;
+     * BES/H4 answers a direct EQ-characteristic read with GET_EQ_SETTING. */
     fun requestParametricEq() {
+        val client = getActiveClient()
+        if (activeEqProtocol() == Protocol.EQ_PROTOCOL_BES_0X20 && client is QcyGattClient) {
+            client.readEQ()
+            return
+        }
         send(0xFE.toByte(), byteArrayOf(0x22.toByte()))
     }
 
@@ -854,7 +870,10 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                     // same cmd byte (DataBean_ReadMultieqState hardcodes 0x22),
                     // so sending the per-side reads here would let the last
                     // reply overwrite the displayed curve with the other side.
-                    send(0xFE.toByte(), byteArrayOf(0x22.toByte()))
+                    // H4/BES answers the direct readEQ() above instead.
+                    if (activeEqProtocol() != Protocol.EQ_PROTOCOL_BES_0X20) {
+                        send(0xFE.toByte(), byteArrayOf(0x22.toByte()))
+                    }
                 }
                 "anc" -> {
                     send(0xFE.toByte(), byteArrayOf(0x0C.toByte()))
@@ -1035,10 +1054,23 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
         }.toByteArray()
         when (val client = getActiveClient()) {
             is QcyGattClient -> {
-                val payload = ByteArray(1 + eqData.size)
-                payload[0] = presetIndex.toByte()
-                System.arraycopy(eqData, 0, payload, 1, eqData.size)
-                client.writeEQ(payload)
+                if (activeEqProtocol() == Protocol.EQ_PROTOCOL_BES_0X20) {
+                    // H4 stores the last explicit band curve; preset ids are
+                    // opaque. Use the firmware's fixed 10-band template.
+                    val bands = Protocol.BES_EQ_FREQUENCIES.indices.map { index ->
+                        Protocol.EqBand(
+                            freq = Protocol.BES_EQ_FREQUENCIES[index],
+                            gainDb = bandGains.getOrElse(index) { 0f },
+                            q = Protocol.BES_EQ_Q[index]
+                        )
+                    }
+                    client.writeEQ(Protocol.buildBesEqSetting(presetIndex, 0f, bands))
+                } else {
+                    val payload = ByteArray(1 + eqData.size)
+                    payload[0] = presetIndex.toByte()
+                    System.arraycopy(eqData, 0, payload, 1, eqData.size)
+                    client.writeEQ(payload)
+                }
             }
             is JlGattClient -> {
                 // Official JL semantics: preset modes send 0x7F gain slots
@@ -1186,6 +1218,18 @@ class DeviceViewModel(application: Application) : AndroidViewModel(application) 
                 handleNotification(toggle.first, byteArrayOf(toggle.second))
             }
             Protocol.EQ_UUID -> {
+                // H4/BES GET_EQ_SETTING: FF 7D 20 7B mode preamp bands[6B].
+                Protocol.parseBesEqSetting(value)?.let { parsed ->
+                    _settings.update {
+                        it.copy(
+                            eqPreset = parsed.eqIndex,
+                            eqBandGains = parsed.bands.map { band -> band.gainDb },
+                            eqParametricBands = parsed.bands,
+                            eqPreGainDb = parsed.masterGainDb
+                        )
+                    }
+                    return
+                }
                 if (currentVendor == VendorRouter.VendorType.ZR) {
                     // ZR EQ read: [eqType, 5 gains] at bytes 0x78..0x7D
                     val parsed = ZrGattClient.parseEqRead(value)

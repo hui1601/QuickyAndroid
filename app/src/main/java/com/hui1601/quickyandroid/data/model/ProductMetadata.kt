@@ -116,7 +116,10 @@ data class EqFeature(
     val maxDb: Int = 8,
     val freq: String = "",
     val characteristic: String = "",
-    val presets: List<String> = emptyList()
+    val presets: List<String> = emptyList(),
+    /** Wire protocol when it differs from the DataBean preset write.
+     * "bes0x20" = QCY H4/BES2300P SET_EQ_SETTING (125-byte packet). */
+    val protocol: String = ""
 )
 
 @Serializable

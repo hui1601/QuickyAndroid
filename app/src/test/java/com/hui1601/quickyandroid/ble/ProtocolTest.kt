@@ -3,6 +3,7 @@ package com.hui1601.quickyandroid.ble
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -564,5 +565,78 @@ class ProtocolTest {
             bytes(0x00, 0x04, 0x03, 0x02, 0x01, 0x23, 0x01),
             packet.copyOfRange(4, 11)
         )
+    }
+
+    // ── BES2300P / H4 EQ packet (QCY-H4-EQ-analysis.md) ───────────────
+
+    @Test
+    fun `buildBesEqSetting matches the H4 flat 10-band template`() {
+        val bands = Protocol.BES_EQ_FREQUENCIES.indices.map { index ->
+            Protocol.EqBand(Protocol.BES_EQ_FREQUENCIES[index], 0f, Protocol.BES_EQ_Q[index])
+        }
+        val packet = Protocol.buildBesEqSetting(0, 0f, bands)
+
+        assertEquals(125, packet.size)
+        assertArrayEquals(bytes(0x20, 0x00, 0x00, 0x00, 0x00), packet.copyOfRange(0, 5))
+        assertArrayEquals(
+            bytes(0x1F, 0x00, 0x00, 0x00, 0x96, 0x00),
+            packet.copyOfRange(5, 11)
+        )
+        // 16 kHz = 0x3E80; 0 dB; Q 3.00 = 0x012C.
+        assertArrayEquals(
+            bytes(0x80, 0x3E, 0x00, 0x00, 0x2C, 0x01),
+            packet.copyOfRange(5 + 9 * 6, 5 + 10 * 6)
+        )
+        assertTrue(packet.copyOfRange(5 + 10 * 6, 125).all { it == 0.toByte() })
+    }
+
+    @Test
+    fun `buildBesEqSetting encodes mode, preamp and signed gain`() {
+        val packet = Protocol.buildBesEqSetting(
+            presetId = 7,
+            preGainDb = -6f,
+            bands = listOf(Protocol.EqBand(1_000, 3.5f, 1.25f))
+        )
+
+        assertEquals(0x07, packet[2].toInt() and 0xFF)
+        // -600 = 0xFDA8 little-endian.
+        assertEquals(0xA8.toByte(), packet[3])
+        assertEquals(0xFD.toByte(), packet[4])
+        // 1000 Hz = 0x03E8, +3.50 dB = 0x015E, Q 1.25 = 0x007D.
+        assertArrayEquals(
+            bytes(0xE8, 0x03, 0x5E, 0x01, 0x7D, 0x00),
+            packet.copyOfRange(5, 11)
+        )
+    }
+
+    @Test
+    fun `parseBesEqSetting reads the H4 GET response`() {
+        val body = Protocol.buildBesEqSetting(
+            presetId = 2,
+            preGainDb = -4.5f,
+            bands = listOf(
+                Protocol.EqBand(31, 1f, 1.5f),
+                Protocol.EqBand(1_000, -2.5f, 3f)
+            )
+        )
+        val response = bytes(0xFF, 0x7D, 0x20, 0x7B) +
+            body.copyOfRange(2, body.size)
+        val parsed = Protocol.parseBesEqSetting(response)!!
+
+        assertEquals(2, parsed.eqIndex)
+        assertEquals(-4.5f, parsed.masterGainDb, 0.001f)
+        assertEquals(2, parsed.bands.size)
+        assertEquals(31, parsed.bands[0].freq)
+        assertEquals(1f, parsed.bands[0].gainDb, 0.001f)
+        assertEquals(1.5f, parsed.bands[0].q, 0.001f)
+        assertEquals(Protocol.EqFilterType.PEAKING.wireValue, parsed.bands[0].bandType)
+        assertEquals(1_000, parsed.bands[1].freq)
+        assertEquals(-2.5f, parsed.bands[1].gainDb, 0.001f)
+    }
+
+    @Test
+    fun `parseBesEqSetting rejects non-H4 payloads`() {
+        assertNull(Protocol.parseBesEqSetting(bytes(0x01, 0x02, 0x03)))
+        assertNull(Protocol.parseBesEqSetting(bytes(0xFF, 0x7D, 0x20, 0x7B)))
     }
 }
