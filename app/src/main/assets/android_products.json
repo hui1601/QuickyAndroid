@@ -5,6 +5,162 @@
     "subTitle": "BR1",
     "category": "accessory",
     "modelId": 21020,
+    "vendorType": "jl",
+    "iconUrl": "",
+    "leftImgUrl": "",
+    "rightImgUrl": "",
+    "boxImgUrl": "",
+    "animationImgZip": "",
+    "colors": [],
+    "catalogCategory": null,
+    "sources": [
+      "legacy-app-features"
+    ]
+  },
+  "768": {
+    "vendorId": 768,
+    "title": "QCY SP7",
+    "subTitle": "QCY SP7",
+    "category": "speaker",
+    "modelId": 21020,
+    "vendorType": "standard",
+    "iconUrl": "",
+    "leftImgUrl": "",
+    "rightImgUrl": "",
+    "boxImgUrl": "",
+    "animationImgZip": "",
+    "colors": [],
+    "catalogCategory": null,
+    "sources": [
+      "legacy-app-features"
+    ]
+  },
+  "769": {
+    "vendorId": 769,
+    "title": "QCY SP300",
+    "subTitle": "QCY SP300",
+    "category": "speaker",
+    "modelId": 21020,
+    "vendorType": "standard",
+    "iconUrl": "",
+    "leftImgUrl": "",
+    "rightImgUrl": "",
+    "boxImgUrl": "",
+    "animationImgZip": "",
+    "colors": [],
+    "catalogCategory": null,
+    "sources": [
+      "legacy-app-features"
+    ]
+  },
+  "770": {
+    "vendorId": 770,
+    "title": "QCY SP7 PLUS",
+    "subTitle": "QCY SP7 PLUS",
+    "category": "speaker",
+    "modelId": 21020,
+    "vendorType": "standard",
+    "iconUrl": "",
+    "leftImgUrl": "",
+    "rightImgUrl": "",
+    "boxImgUrl": "",
+    "animationImgZip": "",
+    "colors": [],
+    "catalogCategory": null,
+    "sources": [
+      "legacy-app-features"
+    ]
+  },
+  "771": {
+    "vendorId": 771,
+    "title": "QCY SP2",
+    "subTitle": "QCY SP2",
+    "category": "speaker",
+    "modelId": 21020,
+    "vendorType": "standard",
+    "iconUrl": "",
+    "leftImgUrl": "",
+    "rightImgUrl": "",
+    "boxImgUrl": "",
+    "animationImgZip": "",
+    "colors": [],
+    "catalogCategory": null,
+    "sources": [
+      "legacy-app-features"
+    ]
+  },
+  "772": {
+    "vendorId": 772,
+    "title": "QCY SP2 MINI",
+    "subTitle": "QCY SP2 MINI",
+    "category": "speaker",
+    "modelId": 21020,
+    "vendorType": "standard",
+    "iconUrl": "",
+    "leftImgUrl": "",
+    "rightImgUrl": "",
+    "boxImgUrl": "",
+    "animationImgZip": "",
+    "colors": [],
+    "catalogCategory": null,
+    "sources": [
+      "legacy-app-features"
+    ]
+  },
+  "776": {
+    "vendorId": 776,
+    "title": "QCY SP75",
+    "subTitle": "QCY SP75",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/SP75_pink.webp",
+    "leftImgUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "boxImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+    "animationImgZip": " ",
+    "animationColor": "46,146,221",
+    "colors": [
+      {
+        "name": "Pink",
+        "color": "#bb89a6",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/sp75/SP75_pink.png",
+        "leftImgUrl": "http://img.qcymall.com/sp75/SP75_pink.png",
+        "rightImgUrl": "http://img.qcymall.com/sp75/SP75_pink.png",
+        "boxImgUrl": "http://img.qcymall.com/sp75/SP75_pink.png",
+        "animationImgZip": "http://img.qcymall.com/sp7/green/sp7green.zip"
+      },
+      {
+        "name": "Blue",
+        "color": "#345165",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/sp75/SP75_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/sp75/SP75_blue.png",
+        "rightImgUrl": "http://img.qcymall.com/sp75/SP75_blue.png",
+        "boxImgUrl": "http://img.qcymall.com/sp75/SP75_blue.png",
+        "animationImgZip": "http://img.qcymall.com/sp7/black/sp7.zip"
+      },
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/sp75/SP75_black.png",
+        "leftImgUrl": "http://img.qcymall.com/sp75/SP75_black.png",
+        "rightImgUrl": "http://img.qcymall.com/sp75/SP75_black.png",
+        "boxImgUrl": "http://img.qcymall.com/sp75/SP75_black.png",
+        "animationImgZip": "http://img.qcymall.com/sp7/blue/sp7blue.zip"
+      },
+      {
+        "name": "Gray",
+        "color": "#404450",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/sp75/SP75_gray.png",
+        "leftImgUrl": "http://img.qcymall.com/sp75/SP75_gray.png",
+        "rightImgUrl": "http://img.qcymall.com/sp75/SP75_gray.png",
+        "boxImgUrl": "http://img.qcymall.com/sp75/SP75_gray.png",
+        "animationImgZip": "http://img.qcymall.com/sp7/green/sp7green.zip"
+      }
+    ],
+    "catalogCategory": "speaker",
     "features": {
       "eq": {
         "bands": 10,
@@ -23,6 +179,105 @@
           3
         ]
       },
+      "device_name": true,
+      "auto_off_timer": {
+        "cmdid": 20,
+        "repeat": 0
+      }
+    },
+    "sources": [
+      "qcy-audio-catalog",
+      "qcy-audio-panel:test.earp.qcy.com"
+    ],
+    "panelFirmware": {
+      "firmwareVersions": "0.0.0.1",
+      "firmwareversionGte": "0.0.0",
+      "firmwareversionLte": "999.999.999"
+    }
+  },
+  "777": {
+    "vendorId": 777,
+    "title": "HEROAD GS3 RPO",
+    "subTitle": "HEROAD GS3 RPO",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "boxImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+    "animationImgZip": " ",
+    "animationColor": "46,146,221",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#2f3133",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "leftImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "rightImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "boxImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#acadae",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "leftImgUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "rightImgUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "boxImgUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "speaker",
+    "sources": [
+      "qcy-audio-catalog"
+    ]
+  },
+  "778": {
+    "vendorId": 778,
+    "title": "HEROAD GS3 MAX",
+    "subTitle": "HEROAD GS3 MAX",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/sp30_black.webp",
+    "boxImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+    "animationImgZip": " ",
+    "animationColor": "46,146,221",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#2f3133",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "leftImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "rightImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "boxImgUrl": "http://img.qcymall.com/sp30/black/sp30_black.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#acadae",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "leftImgUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "rightImgUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "boxImgUrl": "http://img.qcymall.com/sp30/gray/sp30_gary.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "speaker",
+    "sources": [
+      "qcy-audio-catalog"
+    ]
+  },
+  "4577": {
+    "vendorId": 4577,
+    "title": "C1",
+    "subTitle": "QCY-C1",
+    "category": "earphones",
+    "modelId": 21020,
+    "features": {
       "eq": {
         "bands": 10,
         "mindb": 8,
@@ -2785,23 +3040,21 @@
     "title": "QCY H3S EXTREME ANC",
     "subTitle": "QCY H3S EXTREME ANC",
     "category": "earphones",
-    "modelId": 21020,
-    "features": {
-      "eq": {
-        "bands": 10,
-        "mindb": 8,
-        "maxdb": 8,
-        "freq": "31,62,125,250,500,1000,2000,4000,8000,16000",
-        "characteristic": "0000000B-0000-1000-8000-00805f9b34fb",
-        "presets": [
-          "Spatial sound effects",
-          "Default",
-          "Pop",
-          "Heavy Bass",
-          "Rock",
-          "Soft",
-          "Classic"
-        ]
+    "iconUrl": "file:///android_asset/product_images/H3S_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H3S_white.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H3S_white.webp",
+    "boxImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+    "animationColor": "46,136,227",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "leftImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "rightImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "boxImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "animationImgZip": ""
       },
       {
         "name": "Black",
@@ -2970,7 +3223,65 @@
           "type": "ldacModel",
           "cmdid": 35,
           "cmd": null
-        },
+        }
+      ]
+    },
+    "sources": [
+      "legacy-catalog",
+      "qcy-audio-catalog",
+      "qcy-audio-panel:qcyaudio.qcy.com"
+    ],
+    "panelFirmware": {
+      "firmwareVersions": "0.0.0.1",
+      "firmwareversionGte": "0.0.0",
+      "firmwareversionLte": "999.999.999"
+    }
+  },
+  "16767": {
+    "vendorId": 16767,
+    "title": "QCY H3 ANC HEADSET",
+    "subTitle": "QCY H3 ANC HEADSET",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/app_qcy_h3_headphonesapp_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/app_qcy_h3_headphones.webp",
+    "rightImgUrl": "file:///android_asset/product_images/app_qcy_h3_headphones.webp",
+    "boxImgUrl": "http://img.qcymall.com/app_qcy_h3_headphones.png",
+    "animationImgZip": "http://img.qcymall.com/h3_v1.zip",
+    "animationColor": "46,136,227",
+    "catalogCategory": "earphones",
+    "sources": [
+      "legacy-catalog"
+    ]
+  },
+  "16818": {
+    "vendorId": 16818,
+    "title": "QCY Heroad V200",
+    "subTitle": "QCY Heroad V200",
+    "category": "earphones",
+    "modelId": 21020,
+    "features": {
+      "eq": {
+        "bands": 10,
+        "mindb": 8,
+        "maxdb": 8,
+        "freq": "31,62,125,250,500,1000,2000,4000,8000,16000",
+        "characteristic": "0000000B-0000-1000-8000-00805f9b34fb",
+        "presets": [
+          "Default",
+          "Rock",
+          "Pop",
+          "Classic",
+          "Countryside",
+          "Jazz"
+        ]
+      },
+      "find_earphone": true,
+      "device_name": true,
+      "auto_off_timer": {
+        "cmdid": 20,
+        "repeat": 65000
+      },
+      "settings": [
         {
           "name": "Firmware update",
           "type": "firmware_update",
@@ -3093,14 +3404,59 @@
         "animationImgZip": "http://img.qcymall.com/h2slite/white/h2slitewhite.zip"
       },
       {
-        "name": "Purple",
-        "color": "#bcabd5",
-        "colorIndex": 2,
-        "iconUrl": "file:///android_asset/product_images/HT20_purple_01.png",
-        "leftImgUrl": "file:///android_asset/product_images/HT20_purple_L.png",
-        "rightImgUrl": "file:///android_asset/product_images/HT20_purple_R.png",
-        "boxImgUrl": "file:///android_asset/product_images/HT20_purple_02.png",
-        "animationImgZip": "file:///android_asset/product_images/ht20purple.zip"
+        "name": "Black",
+        "color": "#1c1c1c",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/h2slite/black/app_qcy_h2slite_black.webp",
+        "leftImgUrl": "http://img.qcymall.com/h2slite/black/app_qcy_h2slite_black.webp",
+        "rightImgUrl": "http://img.qcymall.com/h2slite/black/app_qcy_h2slite_black.webp",
+        "boxImgUrl": "http://img.qcymall.com/h2slite/black/app_qcy_h2slite_black.webp",
+        "animationImgZip": "http://img.qcymall.com/h2slite/black/h2sliteblack.zip"
+      }
+    ],
+    "catalogCategory": "earphones",
+    "sources": [
+      "legacy-catalog"
+    ]
+  },
+  "16823": {
+    "vendorId": 16823,
+    "title": "HEROAD GT2",
+    "subTitle": "HEROAD GT2",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/H5GM__black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H5GM__black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H5GM__black.webp",
+    "boxImgUrl": "http://img.qcymall.com/H5GM_%20black.png",
+    "animationImgZip": " ",
+    "animationColor": "76,151,241",
+    "catalogCategory": "Over-ear",
+    "sources": [
+      "legacy-catalog",
+      "qcy-audio-catalog"
+    ]
+  },
+  "16824": {
+    "vendorId": 16824,
+    "title": "QCY BARAM",
+    "subTitle": "QCY BARAM",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/app_qcy_h2slite_white__6411dff3.webp",
+    "leftImgUrl": "file:///android_asset/product_images/app_qcy_h2slite_white__6411dff3.webp",
+    "rightImgUrl": "file:///android_asset/product_images/app_qcy_h2slite_white__6411dff3.webp",
+    "boxImgUrl": "http://img.qcymall.com/h2slite/white/app_qcy_h2slite_white.webp",
+    "animationImgZip": "http://img.qcymall.com/h2slite/white/h2slitewhite.zip",
+    "animationColor": "76,151,241",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/h2slite/white/app_qcy_h2slite_white.webp",
+        "leftImgUrl": "http://img.qcymall.com/h2slite/white/app_qcy_h2slite_white.webp",
+        "rightImgUrl": "http://img.qcymall.com/h2slite/white/app_qcy_h2slite_white.webp",
+        "boxImgUrl": "http://img.qcymall.com/h2slite/white/app_qcy_h2slite_white.webp",
+        "animationImgZip": "http://img.qcymall.com/h2slite/white/h2slitewhite.zip"
       },
       {
         "name": "Black",
@@ -3123,6 +3479,70 @@
     "title": "QCY HEROAD EX2",
     "subTitle": "QCY HEROAD EX2",
     "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/H5GM__black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H5GM__black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H5GM__black.webp",
+    "boxImgUrl": "http://img.qcymall.com/H5GM_%20black.png",
+    "animationImgZip": " ",
+    "animationColor": "76,151,241",
+    "catalogCategory": "Over-ear",
+    "sources": [
+      "qcy-audio-catalog"
+    ]
+  },
+  "16828": {
+    "vendorId": 16828,
+    "title": "HEROAD GT5",
+    "subTitle": "HEROAD GT5",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/H30_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H30_white.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H30_white.webp",
+    "boxImgUrl": "http://img.qcymall.com/h30audio/H30_white.png",
+    "animationImgZip": " ",
+    "animationColor": "76,151,241",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/h30audio/H30_white.png",
+        "leftImgUrl": "http://img.qcymall.com/h30audio/H30_white.png",
+        "rightImgUrl": "http://img.qcymall.com/h30audio/H30_white.png",
+        "boxImgUrl": "http://img.qcymall.com/h30audio/H30_white.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Black",
+        "color": "#111114",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/h30audio/H30_black.png",
+        "leftImgUrl": "http://img.qcymall.com/h30audio/H30_black.png",
+        "rightImgUrl": "http://img.qcymall.com/h30audio/H30_black.png",
+        "boxImgUrl": "http://img.qcymall.com/h30audio/H30_black.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Pink",
+        "color": "#d54a9b",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/h30audio/H30_pink.png",
+        "leftImgUrl": "http://img.qcymall.com/h30audio/H30_pink.png",
+        "rightImgUrl": "http://img.qcymall.com/h30audio/H30_pink.png",
+        "boxImgUrl": "http://img.qcymall.com/h30audio/H30_pink.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Over-ear",
+    "sources": [
+      "qcy-audio-catalog"
+    ]
+  },
+  "16849": {
+    "vendorId": 16849,
+    "title": "QCY H4",
+    "subTitle": "QCY H4",
+    "category": "earphones",
     "modelId": 21020,
     "features": {
       "eq": {
@@ -3138,7 +3558,8 @@
           "Rock",
           "Soft",
           "Classic"
-        ]
+        ],
+        "protocol": "bes0x20"
       },
       "anc": {
         "modes": [
@@ -3262,7 +3683,8 @@
           "Rock",
           "Soft",
           "Classic"
-        ]
+        ],
+        "protocol": "bes0x20"
       },
       "anc": {
         "modes": [
@@ -12530,7 +12952,45 @@
     "title": "QCY Crossky C50S",
     "subTitle": "QCY Crossky C50S",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT06S_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT06S_white_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT06S_white_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_box.png",
+    "animationImgZip": "http://img.qcymall.com/ct06s/white/ct06swhite.zip",
+    "animationColor": "51,131,226",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black_box.png",
+        "animationImgZip": "http://img.qcymall.com/ct06s/black/ct06sblack.zip"
+      },
+      {
+        "name": "Grey",
+        "color": "#403f3f",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray.png",
+        "leftImgUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray_box.png",
+        "animationImgZip": "http://img.qcymall.com/ct06s/gray/ct06sgray.zip"
+      },
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_box.png",
+        "animationImgZip": "http://img.qcymall.com/ct06s/white/ct06swhite.zip"
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 6,
@@ -12650,7 +13110,45 @@
     "title": "QCY Crossky C50S",
     "subTitle": "QCY Crossky C50S",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT06S_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT06S_white_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT06S_white_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_box.png",
+    "animationImgZip": "http://img.qcymall.com/ct06s/white/ct06swhite.zip",
+    "animationColor": "51,131,226",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct06saudio/black/CT06S_black_box.png",
+        "animationImgZip": "http://img.qcymall.com/ct06s/black/ct06sblack.zip"
+      },
+      {
+        "name": "Grey",
+        "color": "#403f3f",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray.png",
+        "leftImgUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct06saudio/gray/CT06S_gray_box.png",
+        "animationImgZip": "http://img.qcymall.com/ct06s/gray/ct06sgray.zip"
+      },
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct06saudio/white/CT06S_white_box.png",
+        "animationImgZip": "http://img.qcymall.com/ct06s/white/ct06swhite.zip"
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 6,
@@ -12770,7 +13268,54 @@
     "title": "QCY MeloBuds A30",
     "subTitle": "QCY MeloBuds A30",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -12983,7 +13528,44 @@
     "title": "QCY Crossky C70",
     "subTitle": "QCY Crossky C70",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT03_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT03_black_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT03_black_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#1b1b1c",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct03/black/CT03_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#474d6e",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct03/blue/CT03_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct03/blue/CT03_blue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct03/blue/CT03_blue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct03/blue/CT03_blue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Silver",
+        "color": "#dee2e6",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct03/silver/CT03_silver.png",
+        "leftImgUrl": "http://img.qcymall.com/ct03/silver/CT03_silver_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct03/silver/CT03_silver_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct03/silver/CT03_silver_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 6,
@@ -13117,7 +13699,35 @@
     "title": "QCY Ti Pro",
     "subTitle": "QCY Ti Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT11_ti.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT11_ti_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT11_ti_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Ti",
+        "color": "#c6c5c3",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti.png",
+        "leftImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bbdcf0",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 8,
@@ -14825,7 +15435,35 @@
     "title": "QCY T13 ANC PRO",
     "subTitle": "QCY T13 ANC PRO",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/ht12black_icon.webp",
+    "leftImgUrl": "file:///android_asset/product_images/ht12black_l.webp",
+    "rightImgUrl": "file:///android_asset/product_images/ht12black_r.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht12/black/ht12black_box.png",
+    "animationImgZip": " ",
+    "animationColor": "46,136,227",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht12/black/ht12black_icon.png",
+        "leftImgUrl": "http://img.qcymall.com/ht12/black/ht12black_l.png",
+        "rightImgUrl": "http://img.qcymall.com/ht12/black/ht12black_r.png",
+        "boxImgUrl": "http://img.qcymall.com/ht12/black/ht12black_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht12/black/ht12black.zip"
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht12/white/ht12white_icon.png",
+        "leftImgUrl": "http://img.qcymall.com/ht12/white/ht12white_l.png",
+        "rightImgUrl": "http://img.qcymall.com/ht12/white/ht12white_r.png",
+        "boxImgUrl": "http://img.qcymall.com/ht12/white/ht12white_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht12/white/ht12white.zip"
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -14980,7 +15618,45 @@
     "title": "QCY H4 PRO",
     "subTitle": "QCY H4 PRO",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/H3S_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H3S_white.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H3S_white.webp",
+    "boxImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+    "animationImgZip": " ",
+    "animationColor": "46,136,227",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "leftImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "rightImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "boxImgUrl": "http://img.qcymall.com/h3saudio/white/H3S_white.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/h3saudio/balck/H3S_black.png",
+        "leftImgUrl": "http://img.qcymall.com/h3saudio/balck/H3S_black.png",
+        "rightImgUrl": "http://img.qcymall.com/h3saudio/balck/H3S_black.png",
+        "boxImgUrl": "http://img.qcymall.com/h3saudio/balck/H3S_black.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#b3afaa",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/h3saudio/gray/H3S_gray.png",
+        "leftImgUrl": "http://img.qcymall.com/h3saudio/gray/H3S_gray.png",
+        "rightImgUrl": "http://img.qcymall.com/h3saudio/gray/H3S_gray.png",
+        "boxImgUrl": "http://img.qcymall.com/h3saudio/gray/H3S_gray.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Over-ear",
     "features": {
       "anc": {
         "modes": [
@@ -17780,7 +18456,131 @@
     "title": "QCY HT19 MeloBuds DUAL BT6",
     "subTitle": "QCY HT19 MeloBuds DUAL BT6",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/app_qcy_ht19_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/app_qcy_ht19_left_black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/app_qcy_ht19_right_black.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht19/black/app_qcy_ht19_box_black.png",
+    "animationImgZip": "http://img.qcymall.com/ht19/black/ht19black.zip",
+    "animationColor": "44,140,226",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht19/black/app_qcy_ht19_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ht19/black/app_qcy_ht19_left_black.png",
+        "rightImgUrl": "http://img.qcymall.com/ht19/black/app_qcy_ht19_right_black.png",
+        "boxImgUrl": "http://img.qcymall.com/ht19/black/app_qcy_ht19_box_black.png",
+        "animationImgZip": "http://img.qcymall.com/ht19/black/ht19black.zip"
+      },
+      {
+        "name": "Titanium",
+        "color": "#f9f6ef",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht19/titanium/app_qcy_ht19_titanium.png",
+        "leftImgUrl": "http://img.qcymall.com/ht19/titanium/app_qcy_ht19_left_titanium.png",
+        "rightImgUrl": "http://img.qcymall.com/ht19/titanium/app_qcy_ht19_right_titanium.png",
+        "boxImgUrl": "http://img.qcymall.com/ht19/titanium/app_qcy_ht19_box_titanium.png",
+        "animationImgZip": "http://img.qcymall.com/ht19/titanium/ht19titanium.zip"
+      },
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ht19/white/app_qcy_ht19_white.webp",
+        "leftImgUrl": "http://img.qcymall.com/ht19/white/app_qcy_ht19_left_white.webp",
+        "rightImgUrl": "http://img.qcymall.com/ht19/white/app_qcy_ht19_right_white.webp",
+        "boxImgUrl": "http://img.qcymall.com/ht19/white/app_qcy_ht19_box_white.webp",
+        "animationImgZip": "http://img.qcymall.com/ht19/white/ht19whiten.zip"
+      },
+      {
+        "name": "Blue",
+        "color": "##a2aec6",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/ht19/blue/app_qcy_ht19_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ht19/blue/app_qcy_ht19_left_blue.png",
+        "rightImgUrl": "http://img.qcymall.com/ht19/blue/app_qcy_ht19_right_blue.png",
+        "boxImgUrl": "http://img.qcymall.com/ht19/blue/app_qcy_ht19_box_blue.png",
+        "animationImgZip": "http://img.qcymall.com/ht19/blue/ht19blue.zip"
+      }
+    ],
+    "catalogCategory": "earphones",
+    "sources": [
+      "legacy-catalog"
+    ]
+  },
+  "23884": {
+    "vendorId": 23884,
+    "title": "QCY MeloBuds HT18 Lite",
+    "subTitle": "QCY MeloBuds HT18 Lite",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/app_qcy_ht18_black__91e78699.webp",
+    "leftImgUrl": "file:///android_asset/product_images/app_qcy_ht18_left_black__80c23b7e.webp",
+    "rightImgUrl": "file:///android_asset/product_images/app_qcy_ht18_right_black__b9bf7e53.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht18/black/app_qcy_ht18_box_black.webp",
+    "animationImgZip": "http://img.qcymall.com/ht18/black/ht18black.zip",
+    "animationColor": "44,151,226",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht18/black/app_qcy_ht18_black.webp",
+        "leftImgUrl": "http://img.qcymall.com/ht18/black/app_qcy_ht18_left_black.webp",
+        "rightImgUrl": "http://img.qcymall.com/ht18/black/app_qcy_ht18_right_black.webp",
+        "boxImgUrl": "http://img.qcymall.com/ht18/black/app_qcy_ht18_box_black.webp",
+        "animationImgZip": "http://img.qcymall.com/ht18/black/ht18black.zip"
+      }
+    ],
+    "catalogCategory": "earphones",
+    "sources": [
+      "legacy-catalog"
+    ]
+  },
+  "23885": {
+    "vendorId": 23885,
+    "title": "QCY MeloBuds S1",
+    "subTitle": "QCY MeloBuds S1",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/HT27_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT27_black_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT27_black_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht27audio/black/HT27_black_box.png",
+    "animationImgZip": " ",
+    "animationColor": "44,151,226",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht27audio/black/HT27_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ht27audio/black/HT27_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht27audio/black/HT27_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht27audio/black/HT27_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht27audio/white/HT27_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ht27audio/white/HT27_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht27audio/white/HT27_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht27audio/white/HT27_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#92a1b9",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ht27audio/blue/HT27_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ht27audio/blue/HT27_blue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht27audio/blue/HT27_blue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht27audio/blue/HT27_blue_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -17967,7 +18767,55 @@
     "title": "QCY MeloBuds A30",
     "subTitle": "QCY MeloBuds A30",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -18179,7 +19027,44 @@
     "title": "QCY Crossky C70",
     "subTitle": "QCY Crossky C70",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT03_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT03_black_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT03_black_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#1b1b1c",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct03/black/CT03_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct03/black/CT03_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#474d6e",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct03/blue/CT03_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct03/blue/CT03_blue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct03/blue/CT03_blue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct03/blue/CT03_blue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Silver",
+        "color": "#dee2e6",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct03/silver/CT03_silver.png",
+        "leftImgUrl": "http://img.qcymall.com/ct03/silver/CT03_silver_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct03/silver/CT03_silver_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct03/silver/CT03_silver_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 6,
@@ -18313,7 +19198,35 @@
     "title": "QCY Ti Pro",
     "subTitle": "QCY Ti Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT11_ti.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT11_ti_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT11_ti_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Ti",
+        "color": "#c6c5c3",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti.png",
+        "leftImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct11audio/ti/CT11_ti_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bbdcf0",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct11audio/iceblue/CT11_iceblue_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 8,
@@ -18441,7 +19354,44 @@
     "title": "QCY Ti ",
     "subTitle": "QCY Ti ",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT13_ti.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT13_ti_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT13_ti_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Ti",
+        "color": "#dbd9d5",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#bcd9eb",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#737476",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 8,
@@ -18569,7 +19519,44 @@
     "title": "QCY Ti ",
     "subTitle": "QCY Ti ",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT13_ti.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT13_ti_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT13_ti_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Ti",
+        "color": "#dbd9d5",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#bcd9eb",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#737476",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 8,
@@ -18697,7 +19684,55 @@
     "title": "QCY Crossky C50 Pro",
     "subTitle": "QCY Crossky C50 Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT14_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT14_white_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT14_white_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct14audio/white/CT14_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#837b73",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#aacbdd",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Pink",
+        "color": "#e1bfb9",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 8,
@@ -18825,7 +19860,55 @@
     "title": "QCY Crossky C50 Pro",
     "subTitle": "QCY Crossky C50 Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT14_white.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT14_white_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT14_white_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct14audio/white/CT14_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/white/CT14_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#837b73",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/gray/CT14_gray_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#aacbdd",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/blue/CT14_blue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Pink",
+        "color": "#e1bfb9",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink.png",
+        "leftImgUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct14audio/pink/CT14_pink_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 8,
@@ -18953,7 +20036,45 @@
     "title": "QCY Crossky CC",
     "subTitle": "QCY Crossky CC",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT13_ti.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT13_ti_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT13_ti_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Ti",
+        "color": "#dbd9d5",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/ti/CT13_ti_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#bcd9eb",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/iceblue/CT13_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Gray",
+        "color": "#737476",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back.png",
+        "leftImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ct13audio/gray/CT13_back_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 3,
@@ -20021,7 +21142,54 @@
     "title": "QCY MeloBuds A30",
     "subTitle": "QCY MeloBuds A30",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -20228,7 +21396,55 @@
     "title": "QCY T13 Pro",
     "subTitle": "QCY T13 Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black__a0e440da.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_box.png",
+    "animationImgZip": "http://img.qcymall.com/ht23/black/ht23black.zip",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht23audio/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht23/black/ht23black.zip"
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht23audio/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ht23audio/white/HT23_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht23audio/white/HT23_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht23audio/white/HT23_white_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht23/white/ht23white.zip"
+      },
+      {
+        "name": "Blue",
+        "color": "#282b3f",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ht23audio/blue/HT23_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ht23audio/blue/HT23_blue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht23audio/blue/HT23_blue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht23audio/blue/HT23_blue_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht23/blue/ht23blue.zip"
+      },
+      {
+        "name": "Iceblue",
+        "color": "#3a3d4f",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/ht23audio/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/ht23audio/iceblue/HT23_iceblue_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht23audio/iceblue/HT23_iceblue_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht23audio/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht23/lblue/ht23lblue.zip"
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -20405,7 +21621,55 @@
     "title": "QCY MeloBuds N20 Pro",
     "subTitle": "QCY MeloBuds N20 Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT20S_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT20S_black_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT20S_black_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT20audio/black/HT20S_black_box.png",
+    "animationImgZip": "http://img.qcymall.com/HT20/black/ht20black.zip",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT20audio/black/HT20S_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20audio/black/HT20S_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20audio/black/HT20S_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20audio/black/HT20S_black_box.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/black/ht20black.zip"
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT20audio/white/HT20S_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20audio/white/HT20S_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20audio/white/HT20S_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20audio/white/HT20S_white_box.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/white/ht20white.zip"
+      },
+      {
+        "name": "Purple",
+        "color": "#bcabd5",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT20audio/purple/HT20S_purple.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20audio/purple/HT20S_purple_left.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20audio/purple/HT20S_purple_right.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20audio/purple/HT20S_purple_box.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/purple/ht20purple.zip"
+      },
+      {
+        "name": "Blue",
+        "color": "#3a3d4f",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_01.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_L_01_01.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_R_02_02.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_02.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/blue/ht20blue.zip"
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -20544,6 +21808,93 @@
           }
         ]
       },
+      "find_earphone": true,
+      "channel_balance": true,
+      "device_name": true,
+      "auto_off_timer": {
+        "cmdid": 20,
+        "repeat": 0
+      },
+      "settings": [
+        {
+          "name": "LDAC",
+          "type": "ldacModel",
+          "cmdid": 35,
+          "cmd": null
+        },
+        {
+          "name": "Gaming mode",
+          "type": "gameModePro",
+          "cmdid": 74,
+          "cmd": null
+        }
+      ]
+    },
+    "sources": [
+      "legacy-catalog",
+      "qcy-audio-catalog",
+      "qcy-audio-panel:qcyaudio.qcy.com"
+    ],
+    "panelFirmware": {
+      "firmwareVersions": "0.0.0.1",
+      "firmwareversionGte": "0.0.0",
+      "firmwareversionLte": "2.2.8"
+    }
+  },
+  "32890": {
+    "vendorId": 32890,
+    "title": "QCY Crossky C50i",
+    "subTitle": "QCY Crossky C50i",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/CT12_white_01.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT12_white_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT12_white_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_02.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/CT12/white/CT12_white_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_02.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_02.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Pink",
+        "color": "#e1c4cc",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_02.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#3a3d4f",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_02.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
+    "features": {
       "eq": {
         "bands": 9,
         "mindb": 8,
@@ -20915,7 +22266,112 @@
     "title": "QCY HT20 MeloBuds NEO BT6",
     "subTitle": "QCY HT20 MeloBuds NEO BT6",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT20_black_01.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT20_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT20_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT20/black/HT20_black_02.png",
+    "animationImgZip": "http://img.qcymall.com/HT20/black/ht20black.zip",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT20/black/HT20_black_01.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20/black/HT20_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20/black/HT20_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20/black/HT20_black_02.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/black/ht20black.zip"
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT20/white/HT20_white_01.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20/white/HT20_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20/white/HT20_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20/white/HT20_white_02.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/white/ht20white.zip"
+      },
+      {
+        "name": "Purple",
+        "color": "#bcabd5",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT20/purple/HT20_purple_01.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20/purple/HT20_purple_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20/purple/HT20_purple_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20/purple/HT20_purple_02.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/purple/ht20purple.zip"
+      },
+      {
+        "name": "Blue",
+        "color": "#3a3d4f",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_01.png",
+        "leftImgUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT20/blue/HT20_blue_02.png",
+        "animationImgZip": "http://img.qcymall.com/HT20/blue/ht20blue.zip"
+      }
+    ],
+    "catalogCategory": "earphones",
+    "sources": [
+      "legacy-catalog"
+    ]
+  },
+  "32893": {
+    "vendorId": 32893,
+    "title": "QCY MeloBuds A30",
+    "subTitle": "QCY MeloBuds A30",
+    "category": "earphones",
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -21381,7 +22837,54 @@
     "title": "JOY TinyS Pro",
     "subTitle": "JOY TinyS Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -21587,7 +23090,44 @@
     "title": "QCY H6 Ultra",
     "subTitle": "QCY H6 Ultra",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/H6_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H6_black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H6_black.webp",
+    "boxImgUrl": "http://img.qcymall.com/H6/H6_black.png",
+    "animationColor": "46,136,227",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/H6/H6_black.png",
+        "leftImgUrl": "http://img.qcymall.com/H6/H6_black.png",
+        "rightImgUrl": "http://img.qcymall.com/H6/H6_black.png",
+        "boxImgUrl": "http://img.qcymall.com/H6/H6_black.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/H6/H6_white.png",
+        "leftImgUrl": "http://img.qcymall.com/H6/H6_white.png",
+        "rightImgUrl": "http://img.qcymall.com/H6/H6_white.png",
+        "boxImgUrl": "http://img.qcymall.com/H6/H6_white.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Orange",
+        "color": "#bd6a41",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/H6/H6_orange.png",
+        "leftImgUrl": "http://img.qcymall.com/H6/H6_orange.png",
+        "rightImgUrl": "http://img.qcymall.com/H6/H6_orange.png",
+        "boxImgUrl": "http://img.qcymall.com/H6/H6_orange.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Over-ear",
     "features": {
       "anc": {
         "modes": [
@@ -21783,7 +23323,54 @@
     "title": "QCY H6 Neo",
     "subTitle": "QCY H6 Neo",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/H6neo_black_a.webp",
+    "leftImgUrl": "file:///android_asset/product_images/H6neo_black_a.webp",
+    "rightImgUrl": "file:///android_asset/product_images/H6neo_black_a.webp",
+    "boxImgUrl": "http://img.qcymall.com/H6NEO/black/H6neo_black_a.png",
+    "animationColor": "46,136,227",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/H6NEO/black/H6neo_black_a.png",
+        "leftImgUrl": "http://img.qcymall.com/H6NEO/black/H6neo_black_a.png",
+        "rightImgUrl": "http://img.qcymall.com/H6NEO/black/H6neo_black_a.png",
+        "boxImgUrl": "http://img.qcymall.com/H6NEO/black/H6neo_black_a.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/H6NEO/white/H6neo_white_a.png",
+        "leftImgUrl": "http://img.qcymall.com/H6NEO/white/H6neo_white_a.png",
+        "rightImgUrl": "http://img.qcymall.com/H6NEO/white/H6neo_white_a.png",
+        "boxImgUrl": "http://img.qcymall.com/H6NEO/white/H6neo_white_a.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Green",
+        "color": "#c5d8d9",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/H6NEO/green/H6neo_green_a.png",
+        "leftImgUrl": "http://img.qcymall.com/H6NEO/green/H6neo_green_a.png",
+        "rightImgUrl": "http://img.qcymall.com/H6NEO/green/H6neo_green_a.png",
+        "boxImgUrl": "http://img.qcymall.com/H6NEO/green/H6neo_green_a.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#555a72",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/H6NEO/blue/H6neo_blue_a.png",
+        "leftImgUrl": "http://img.qcymall.com/H6NEO/blue/H6neo_blue_a.png",
+        "rightImgUrl": "http://img.qcymall.com/H6NEO/blue/H6neo_blue_a.png",
+        "boxImgUrl": "http://img.qcymall.com/H6NEO/blue/H6neo_blue_a.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Over-ear",
     "features": {
       "anc": {
         "modes": [
@@ -22215,7 +23802,35 @@
     "title": "QCY T13 PRO ANC BT6",
     "subTitle": "QCY T13 PRO ANC BT6",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black__a0e440da.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_left.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_right.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_box.png",
+    "animationImgZip": "http://img.qcymall.com/ht23/black/ht23black.zip",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht23audio/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht23audio/black/HT23_black_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht23/black/ht23black.zip"
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht23audio/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ht23audio/white/HT23_white_left.png",
+        "rightImgUrl": "http://img.qcymall.com/ht23audio/white/HT23_white_right.png",
+        "boxImgUrl": "http://img.qcymall.com/ht23audio/white/HT23_white_box.png",
+        "animationImgZip": "http://img.qcymall.com/ht23/white/ht23white.zip"
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -22392,7 +24007,55 @@
     "title": "QCY MeloBuds Pro",
     "subTitle": "QCY MeloBuds Pro",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/app_qcy_ht08_next_icon_blue.webp",
+    "leftImgUrl": "file:///android_asset/product_images/app_qcy_ht08_next_left_blue.webp",
+    "rightImgUrl": "file:///android_asset/product_images/app_qcy_ht08_next_right_blue.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT21/black/app_qcy_ht21_box_black.webp",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Blue",
+        "color": "#3a3d4f",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht08_next/blue/app_qcy_ht08_next_icon_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ht08_next/blue/app_qcy_ht08_next_left_blue.png",
+        "rightImgUrl": "http://img.qcymall.com/ht08_next/blue/app_qcy_ht08_next_right_blue.png",
+        "boxImgUrl": "http://img.qcymall.com/ht08_next/blue/app_qcy_ht08_next_blue.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht08_next/black/app_qcy_ht08_next_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ht08_next/black/app_qcy_ht08_next_left_black.png",
+        "rightImgUrl": "http://img.qcymall.com/ht08_next/black/app_qcy_ht08_next_right_black.png",
+        "boxImgUrl": "http://img.qcymall.com/ht08_next/black/app_qcy_ht08_next_box_black.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ht08_next/white/app_qcy_ht08_next_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ht08_next/white/app_qcy_ht08_next_left_white.png",
+        "rightImgUrl": "http://img.qcymall.com/ht08_next/white/app_qcy_ht08_next_right_white.png",
+        "boxImgUrl": "http://img.qcymall.com/ht08_next/white/app_qcy_ht08_next_box_white.png",
+        "animationImgZip": "http://img.qcymall.com/HT21/white/ht21white.zip"
+      },
+      {
+        "name": "Ti",
+        "color": "#c5c4c0",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/ht08_next/Ti/app_qcy_ht08_next_ti.png",
+        "leftImgUrl": "http://img.qcymall.com/ht08_next/Ti/app_qcy_ht08_next_left_ti.png",
+        "rightImgUrl": "http://img.qcymall.com/ht08_next/Ti/app_qcy_ht08_next_right_ti.png",
+        "boxImgUrl": "http://img.qcymall.com/ht08_next/Ti/app_qcy_ht08_next_box_ti.png",
+        "animationImgZip": "http://img.qcymall.com/HT21/ti/ht21ti.zip"
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -22596,7 +24259,54 @@
     "title": "QCY Crossky C50i",
     "subTitle": "QCY Crossky C50i",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/CT12_white_01.webp",
+    "leftImgUrl": "file:///android_asset/product_images/CT12_white_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/CT12_white_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_02.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/CT12/white/CT12_white_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/white/CT12_white_02.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/gray/CT12_gray_02.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Pink",
+        "color": "#e1c4cc",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/pink/CT12_pink_02.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Blue",
+        "color": "#3a3d4f",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_01.png",
+        "leftImgUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/CT12/blue/CT12_blue_02.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "Clip-on",
     "features": {
       "eq": {
         "bands": 9,
@@ -22937,7 +24647,55 @@
     "title": "QCY MeloBuds A30",
     "subTitle": "QCY MeloBuds A30",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationImgZip": " ",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -23143,7 +24901,54 @@
     "title": "QCY HT22 MeloBuds AI ANC BT6",
     "subTitle": "QCY HT22 MeloBuds AI ANC BT6",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/HT23_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/HT23_black_L.webp",
+    "rightImgUrl": "file:///android_asset/product_images/HT23_black_R.webp",
+    "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+    "animationColor": "76,150,240",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/HT22/black/HT23_black.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/black/HT23_black_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/HT22/white/HT23_white.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/white/HT23_white_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Iceblue",
+        "color": "#bed4e1",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/iceblue/HT23_iceblue_box.png",
+        "animationImgZip": ""
+      },
+      {
+        "name": "Golden",
+        "color": "#e1dbd5",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/HT22/golden/HT23_golden.png",
+        "leftImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_L.png",
+        "rightImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_R.png",
+        "boxImgUrl": "http://img.qcymall.com/HT22/golden/HT23_golden_box.png",
+        "animationImgZip": ""
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
@@ -23355,7 +25160,55 @@
     "title": "QCY T13 ANC 3",
     "subTitle": "QCY T13 ANC 3",
     "category": "earphones",
-    "modelId": 21020,
+    "iconUrl": "file:///android_asset/product_images/app_qcy_ht15_black.webp",
+    "leftImgUrl": "file:///android_asset/product_images/app_qcy_ht15_left_black.webp",
+    "rightImgUrl": "file:///android_asset/product_images/app_qcy_ht15_right_black.webp",
+    "boxImgUrl": "http://img.qcymall.com/ht15/black/app_qcy_ht15_box_black.png",
+    "animationImgZip": " ",
+    "animationColor": "42,151,246",
+    "colors": [
+      {
+        "name": "Black",
+        "color": "#000000",
+        "colorIndex": 0,
+        "iconUrl": "http://img.qcymall.com/ht15/black/app_qcy_ht15_black.png",
+        "leftImgUrl": "http://img.qcymall.com/ht15/black/app_qcy_ht15_left_black.png",
+        "rightImgUrl": "http://img.qcymall.com/ht15/black/app_qcy_ht15_right_black.png",
+        "boxImgUrl": "http://img.qcymall.com/ht15/black/app_qcy_ht15_box_black.png",
+        "animationImgZip": "http://img.qcymall.com/ht15/black/ht15black.zip"
+      },
+      {
+        "name": "White",
+        "color": "#FFFFFF",
+        "colorIndex": 1,
+        "iconUrl": "http://img.qcymall.com/ht15/white/app_qcy_ht15_white.png",
+        "leftImgUrl": "http://img.qcymall.com/ht15/white/app_qcy_ht15_left_white.png",
+        "rightImgUrl": "http://img.qcymall.com/ht15/white/app_qcy_ht15_right_white.png",
+        "boxImgUrl": "http://img.qcymall.com/ht15/white/app_qcy_ht15_box_white.png",
+        "animationImgZip": "http://img.qcymall.com/ht15/white/ht15white.zip"
+      },
+      {
+        "name": "DarkGreen",
+        "color": "#222d28",
+        "colorIndex": 2,
+        "iconUrl": "http://img.qcymall.com/ht15/bgreen/app_qcy_ht15_green.png",
+        "leftImgUrl": "http://img.qcymall.com/ht15/bgreen/app_qcy_ht15_left_green.png",
+        "rightImgUrl": "http://img.qcymall.com/ht15/bgreen/app_qcy_ht15_right_green.png",
+        "boxImgUrl": "http://img.qcymall.com/ht15/bgreen/app_qcy_ht15_box_green.png",
+        "animationImgZip": "http://img.qcymall.com/ht15/bgreen/ht15green.zip"
+      },
+      {
+        "name": "Blue",
+        "color": "#686b7e",
+        "colorIndex": 3,
+        "iconUrl": "http://img.qcymall.com/ht15/blue/app_qcy_ht15_blue.png",
+        "leftImgUrl": "http://img.qcymall.com/ht15/blue/app_qcy_ht15_left_blue.png",
+        "rightImgUrl": "http://img.qcymall.com/ht15/blue/app_qcy_ht15_right_blue.png",
+        "boxImgUrl": "http://img.qcymall.com/ht15/blue/app_qcy_ht15_box_blue.png",
+        "animationImgZip": "http://img.qcymall.com/ht15/blue/ht15blue.zip"
+      }
+    ],
+    "catalogCategory": "In-ear",
     "features": {
       "anc": {
         "modes": [
