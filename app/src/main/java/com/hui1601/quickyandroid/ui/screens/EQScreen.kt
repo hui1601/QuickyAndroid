@@ -1,6 +1,7 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalMaterial3ExpressiveApi::class,
+    FlowPreview::class
 )
 
 package com.hui1601.quickyandroid.ui.screens
@@ -16,7 +17,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,7 +46,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Equalizer
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
@@ -52,7 +53,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,21 +80,33 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
@@ -103,7 +115,13 @@ import com.hui1601.quickyandroid.ui.components.AutoEqImportSheet
 import com.hui1601.quickyandroid.ui.theme.tabular
 import com.hui1601.quickyandroid.ui.viewmodel.DeviceViewModel
 import com.hui1601.quickyandroid.ble.Protocol
+import com.hui1601.quickyandroid.util.eqResponseDb
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,14 +138,24 @@ fun EQScreen(
     val product by deviceViewModel.product.collectAsState()
 
     val eqFeature = product?.features?.eq
+    val eqProtocol = eqFeature?.protocol ?: ""
     val bandCount = eqFeature?.bands ?: 5
     val minDb = eqFeature?.minDb ?: 8
     val maxDb = eqFeature?.maxDb ?: 8
     val freqString = eqFeature?.freq ?: ""
     val bandFrequencies = parseFrequencies(freqString, bandCount)
 
-    val eqPresets = eqFeature?.presets?.takeIf { it.isNotEmpty() }
-        ?: listOf("Default", "Bass Boost", "Treble Boost", "Vocal", "Rock", "Pop", "Classical", "Jazz")
+    val eqPresets = if (eqProtocol == Protocol.EQ_PROTOCOL_BES_0X20) {
+        // H4 firmware stores only the explicit band curve; preset ids are
+        // opaque, so the catalog labels would do nothing. Keep the sliders.
+        emptyList()
+    } else {
+        eqFeature?.presets?.takeIf { it.isNotEmpty() }
+            ?: listOf(
+                "Default", "Bass Boost", "Treble Boost", "Vocal",
+                "Rock", "Pop", "Classical", "Jazz"
+            )
+    }
 
     var selectedPreset by remember { mutableStateOf(settings.eqPreset) }
     var bandValues by remember(bandCount) {
@@ -167,6 +195,21 @@ fun EQScreen(
             parametricState.preGainDb = settings.eqPreGainDb
             lastDeviceEq = reported
         }
+    }
+    // Apply pending Advanced edits 500 ms after the last change. Device
+    // read-backs update lastDeviceEq first, so they are not written back.
+    LaunchedEffect(Unit) {
+        snapshotFlow { parametricState.preGainDb to parametricState.bands }
+            .distinctUntilChanged()
+            .drop(1)
+            .debounce(500)
+            .collect { (preGainDb, bands) ->
+                val snapshot = bands to preGainDb
+                if (bands.isNotEmpty() && snapshot != lastDeviceEq) {
+                    lastDeviceEq = snapshot
+                    deviceViewModel.setParametricEq(preGainDb, bands)
+                }
+            }
     }
     LaunchedEffect(parametricSupported) {
         if (!parametricSupported) view = EqView.SIMPLE
@@ -267,7 +310,8 @@ fun EQScreen(
                             state = parametricState,
                             listState = advancedListState,
                             scrollBehavior = scrollBehavior,
-                            onImportAutoEq = { showAutoEqImport = true }
+                            onImportAutoEq = { showAutoEqImport = true },
+                            peakingOnly = eqProtocol == Protocol.EQ_PROTOCOL_BES_0X20
                         )
                     }
                 }
@@ -280,15 +324,8 @@ fun EQScreen(
                 exit = fadeOut(motionScheme.defaultEffectsSpec<Float>()),
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                ParametricEqActionsBar(
-                    applyEnabled = parametricState.bands.isNotEmpty(),
-                    onRead = deviceViewModel::requestParametricEq,
-                    onApply = {
-                        deviceViewModel.setParametricEq(
-                            parametricState.preGainDb,
-                            parametricState.bands
-                        )
-                    }
+                ParametricEqReadBar(
+                    onRead = deviceViewModel::requestParametricEq
                 )
             }
         }
@@ -305,7 +342,7 @@ fun EQScreen(
                 scope.launch {
                     snackbarHostState.showSnackbar(
                         "Imported $name (${profile.bands.size} filters). " +
-                            "Review the curve, then apply."
+                            "Applying automatically after 0.5 s."
                     )
                 }
             }
@@ -384,23 +421,25 @@ private fun SimpleEqPane(
             )
         }
 
-        item {
-            Text(
-                text = "Presets",
-                style = MaterialTheme.typography.titleMediumEmphasized,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                presets.forEachIndexed { index, preset ->
-                    FilterChip(
-                        selected = selectedPreset == index,
-                        onClick = { onSelectPreset(index) },
-                        label = { Text(preset) }
-                    )
+        if (presets.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Presets",
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    presets.forEachIndexed { index, preset ->
+                        FilterChip(
+                            selected = selectedPreset == index,
+                            onClick = { onSelectPreset(index) },
+                            label = { Text(preset) }
+                        )
+                    }
                 }
             }
         }
@@ -431,7 +470,8 @@ private fun ParametricEqPane(
     state: ParametricEqEditorState,
     listState: LazyListState,
     scrollBehavior: TopAppBarScrollBehavior,
-    onImportAutoEq: () -> Unit
+    onImportAutoEq: () -> Unit,
+    peakingOnly: Boolean
 ) {
     LazyColumn(
         state = listState,
@@ -441,20 +481,23 @@ private fun ParametricEqPane(
         // Bottom padding keeps the last band clear of the actions bar.
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp)
     ) {
-        item { CustomParametricEqSection(state = state, onImportAutoEq = onImportAutoEq) }
+        item {
+            CustomParametricEqSection(
+                state = state,
+                onImportAutoEq = onImportAutoEq,
+                peakingOnly = peakingOnly
+            )
+        }
     }
 }
 
 /**
- * Floating actions bar (M3 Expressive floating toolbar): page-level actions
- * stay reachable while scrolling the band list.
+ * Floating toolbar (M3 Expressive) keeps the one remaining page action —
+ * reading the live device curve — reachable while scrolling. Edits apply
+ * automatically, so there is no manual Apply button.
  */
 @Composable
-private fun ParametricEqActionsBar(
-    applyEnabled: Boolean,
-    onRead: () -> Unit,
-    onApply: () -> Unit
-) {
+private fun ParametricEqReadBar(onRead: () -> Unit) {
     Surface(
         modifier = Modifier
             .navigationBarsPadding()
@@ -464,21 +507,18 @@ private fun ParametricEqActionsBar(
         tonalElevation = 3.dp,
         shadowElevation = 6.dp
     ) {
-        Row(
+        FilledTonalButton(
+            onClick = onRead,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
         ) {
-            FilledTonalIconButton(onClick = onRead) {
-                Icon(Icons.Default.Refresh, contentDescription = "Read from device")
-            }
-            Button(
-                onClick = onApply,
-                enabled = applyEnabled,
-                contentPadding = PaddingValues(horizontal = 24.dp)
-            ) {
-                Text("Apply to device")
-            }
+            Icon(
+                Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Read from device")
         }
     }
 }
@@ -519,7 +559,8 @@ internal class ParametricEqEditorState(
 @Composable
 internal fun CustomParametricEqSection(
     state: ParametricEqEditorState = remember { ParametricEqEditorState() },
-    onImportAutoEq: (() -> Unit)? = null
+    onImportAutoEq: (() -> Unit)? = null,
+    peakingOnly: Boolean = false
 ) {
     Column {
         Text(
@@ -528,9 +569,17 @@ internal fun CustomParametricEqSection(
             modifier = Modifier.padding(vertical = 8.dp)
         )
         Text(
-            text = "Tap a point on the curve to edit that band; drag it to move " +
-                "frequency and gain. Up to ${Protocol.EQ_MAX_BANDS} bands with " +
-                "arbitrary frequency, gain, Q and filter type.",
+            text = if (peakingOnly) {
+                "H4 firmware applies every band as a peaking filter. Tap a point " +
+                    "to select a band, then edit frequency, gain and Q below. " +
+                    "Changes apply automatically 0.5 s after you stop editing; " +
+                    "press and hold a slider for fine control."
+            } else {
+                "Tap a gain or Q point to select its band, then edit frequency, " +
+                    "gain and Q below (up to ${Protocol.EQ_MAX_BANDS} bands). " +
+                    "Changes apply automatically 0.5 s after you stop editing; " +
+                    "press and hold a slider for fine control."
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -546,9 +595,6 @@ internal fun CustomParametricEqSection(
             preGainDb = state.preGainDb,
             selectedIndex = state.selectedBand,
             onSelectBand = { state.selectedBand = it },
-            onBandChange = { index, updated ->
-                state.bands = state.bands.toMutableList().also { it[index] = updated }
-            },
             onPreGainChange = { state.preGainDb = it }
         )
 
@@ -559,6 +605,7 @@ internal fun CustomParametricEqSection(
             CustomBandCard(
                 index = state.selectedBand,
                 band = selected,
+                peakingOnly = peakingOnly,
                 onChange = { updated ->
                     state.bands = state.bands.toMutableList().also {
                         it[state.selectedBand] = updated
@@ -643,20 +690,17 @@ private const val EQ_GRAPH_MAX_DB = 12f
 private const val EQ_Q_MIN = 0.3f
 private const val EQ_Q_MAX = 5f
 
-/** Which line a drag grabbed. */
-private enum class EqSeries { GAIN, Q }
-
 @Composable
 private fun ParametricBandGraphCard(
     bands: List<Protocol.EqBand>,
     preGainDb: Float,
     selectedIndex: Int,
     onSelectBand: (Int) -> Unit,
-    onBandChange: (index: Int, band: Protocol.EqBand) -> Unit,
     onPreGainChange: (Float) -> Unit
 ) {
     val gainColor = MaterialTheme.colorScheme.primary
     val qColor = MaterialTheme.colorScheme.tertiary
+    val resultColor = MaterialTheme.colorScheme.secondary
 
     Card(
         shape = MaterialTheme.shapes.extraLarge,
@@ -672,15 +716,17 @@ private fun ParametricBandGraphCard(
             ) {
                 GraphLegend(label = "Gain", color = gainColor)
                 GraphLegend(label = "Q", color = qColor)
+                GraphLegend(label = "Result", color = resultColor)
             }
             Spacer(modifier = Modifier.height(8.dp))
             BandGraph(
                 bands = bands,
+                preGainDb = preGainDb,
                 gainColor = gainColor,
                 qColor = qColor,
+                resultColor = resultColor,
                 selectedIndex = selectedIndex,
                 onSelectBand = onSelectBand,
-                onBandChange = onBandChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
@@ -690,11 +736,10 @@ private fun ParametricBandGraphCard(
                 text = "Pre-gain  %+.1f dB".format(preGainDb),
                 style = MaterialTheme.typography.bodyMedium
             )
-            Slider(
+            FineTuneSlider(
                 value = preGainDb,
                 onValueChange = onPreGainChange,
-                valueRange = EQ_GRAPH_MIN_DB..EQ_GRAPH_MAX_DB,
-                steps = 47
+                valueRange = EQ_GRAPH_MIN_DB..EQ_GRAPH_MAX_DB
             )
         }
     }
@@ -718,25 +763,25 @@ private fun GraphLegend(label: String, color: Color) {
 }
 
 /**
- * Gain and Q as two colored lines over the shared log-frequency axis.
- * Tapping a point selects its band; dragging edits that series' value and
- * the band frequency.
+ * Gain and Q as two colored lines plus a faint summed-response preview over
+ * the shared log-frequency axis. Tapping a handle only selects its band; the
+ * sliders below are the single place that edits frequency, gain and Q.
  */
 @Composable
 private fun BandGraph(
     bands: List<Protocol.EqBand>,
+    preGainDb: Float,
     gainColor: Color,
     qColor: Color,
+    resultColor: Color,
     selectedIndex: Int,
     onSelectBand: (Int) -> Unit,
-    onBandChange: (index: Int, band: Protocol.EqBand) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gridColor = MaterialTheme.colorScheme.outline
     val handleRingColor = MaterialTheme.colorScheme.surfaceContainer
     val currentBands by rememberUpdatedState(bands)
     val currentOnSelect by rememberUpdatedState(onSelectBand)
-    val currentOnChange by rememberUpdatedState(onBandChange)
 
     Canvas(
         modifier = modifier
@@ -749,60 +794,8 @@ private fun BandGraph(
                         size.height.toFloat(),
                         28.dp.toPx()
                     )
-                    if (hit != null) currentOnSelect(hit.first)
+                    if (hit != null) currentOnSelect(hit)
                 }
-            }
-            .pointerInput(Unit) {
-                var dragIndex = -1
-                var dragSeries = EqSeries.GAIN
-                detectDragGestures(
-                    onDragStart = { position ->
-                        val hit = nearestBandHandle(
-                            currentBands,
-                            position,
-                            size.width.toFloat(),
-                            size.height.toFloat(),
-                            32.dp.toPx()
-                        )
-                        dragIndex = hit?.first ?: -1
-                        dragSeries = hit?.second ?: EqSeries.GAIN
-                        if (hit != null) currentOnSelect(hit.first)
-                    },
-                    onDragEnd = { dragIndex = -1 },
-                    onDragCancel = { dragIndex = -1 },
-                    onDrag = { change, _ ->
-                        if (dragIndex in currentBands.indices) {
-                            change.consume()
-                            val width = size.width.toFloat().coerceAtLeast(1f)
-                            val height = size.height.toFloat().coerceAtLeast(1f)
-                            val band = currentBands[dragIndex]
-                            val freq = sliderToFreq(
-                                (change.position.x / width).coerceIn(0f, 1f)
-                            )
-                            val updated = when (dragSeries) {
-                                EqSeries.GAIN -> band.copy(
-                                    freq = freq,
-                                    gainDb = yToValue(
-                                        change.position.y,
-                                        height,
-                                        EQ_GRAPH_MIN_DB,
-                                        EQ_GRAPH_MAX_DB
-                                    )
-                                )
-                                EqSeries.Q -> band.copy(
-                                    freq = freq,
-                                    q = yToValue(
-                                        change.position.y,
-                                        height,
-                                        EQ_Q_MIN,
-                                        EQ_Q_MAX
-                                    )
-                                )
-                            }
-                            currentOnChange(dragIndex, updated)
-                        }
-                    }
-                )
             }
     ) {
         val width = size.width
@@ -828,6 +821,40 @@ private fun BandGraph(
                 strokeWidth = 1.dp.toPx()
             )
         }
+
+        // What the DSP will actually apply: the summed band response
+        // including pre-gain, kept faint so the editable gain/Q lines lead.
+        val responseSamples = 96
+        val responsePath = Path()
+        repeat(responseSamples + 1) { index ->
+            val t = index.toFloat() / responseSamples
+            val freq = 20f * Math.pow(1000.0, t.toDouble()).toFloat()
+            val point = Offset(
+                freqToX(freq, width),
+                valueToY(
+                    eqResponseDb(bands, preGainDb, freq),
+                    height,
+                    EQ_GRAPH_MIN_DB,
+                    EQ_GRAPH_MAX_DB
+                )
+            )
+            if (index == 0) {
+                responsePath.moveTo(point.x, point.y)
+            } else {
+                responsePath.lineTo(point.x, point.y)
+            }
+        }
+        drawPath(
+            path = responsePath,
+            color = resultColor.copy(alpha = 0.45f),
+            style = Stroke(
+                width = 2.dp.toPx(),
+                cap = StrokeCap.Round,
+                pathEffect = PathEffect.dashPathEffect(
+                    floatArrayOf(8.dp.toPx(), 6.dp.toPx())
+                )
+            )
+        )
 
         val ordered = bands.sortedBy { it.freq }
         fun seriesPoints(value: (Protocol.EqBand) -> Float, min: Float, max: Float) =
@@ -936,54 +963,196 @@ private fun valueToY(value: Float, height: Float, minValue: Float, maxValue: Flo
     return (1f - t) * height
 }
 
-private fun yToValue(y: Float, height: Float, minValue: Float, maxValue: Float): Float {
-    val t = (y / height.coerceAtLeast(1f)).coerceIn(0f, 1f)
-    return maxValue - t * (maxValue - minValue)
-}
-
-/** Nearest handle of either line; null when the tap lands away from both. */
+/** Nearest gain/Q handle; null when the tap lands away from all bands. */
 private fun nearestBandHandle(
     bands: List<Protocol.EqBand>,
     position: Offset,
     width: Float,
     height: Float,
     threshold: Float
-): Pair<Int, EqSeries>? {
-    var best: Pair<Int, EqSeries>? = null
+): Int? {
+    var best: Int? = null
     var bestDistance = threshold * threshold
 
-    fun consider(index: Int, series: EqSeries, x: Float, y: Float) {
+    fun consider(index: Int, x: Float, y: Float) {
         val dx = x - position.x
         val dy = y - position.y
         val distance = dx * dx + dy * dy
         if (distance <= bestDistance) {
             bestDistance = distance
-            best = index to series
+            best = index
         }
     }
 
     bands.forEachIndexed { index, band ->
         val x = freqToX(band.freq.toFloat(), width)
-        consider(
-            index,
-            EqSeries.GAIN,
-            x,
-            valueToY(band.gainDb, height, EQ_GRAPH_MIN_DB, EQ_GRAPH_MAX_DB)
-        )
-        consider(
-            index,
-            EqSeries.Q,
-            x,
-            valueToY(band.q, height, EQ_Q_MIN, EQ_Q_MAX)
-        )
+        consider(index, x, valueToY(band.gainDb, height, EQ_GRAPH_MIN_DB, EQ_GRAPH_MAX_DB))
+        consider(index, x, valueToY(band.q, height, EQ_Q_MIN, EQ_Q_MAX))
     }
     return best
+}
+
+/**
+ * Slider with a long-press "fine tune" mode: holding still grows the thumb
+ * and divides drag sensitivity by five, so one finger can make precise
+ * parametric-band changes without a second control.
+ */
+@Composable
+private fun FineTuneSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    modifier: Modifier = Modifier,
+    fineFactor: Float = 0.2f
+) {
+    val currentValue by rememberUpdatedState(value)
+    val currentOnValueChange by rememberUpdatedState(onValueChange)
+    val haptics = LocalHapticFeedback.current
+    var fine by remember { mutableStateOf(false) }
+    val thumbScale by animateFloatAsState(
+        targetValue = if (fine) 1.4f else 1f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+        label = "fineThumb"
+    )
+
+    val activeColor = MaterialTheme.colorScheme.primary
+    val inactiveColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    val range = (valueRange.endInclusive - valueRange.start).coerceAtLeast(0.0001f)
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .semantics {
+                progressBarRangeInfo = ProgressBarRangeInfo(value, valueRange)
+                setProgress { target ->
+                    currentOnValueChange(target.coerceIn(valueRange))
+                    true
+                }
+            }
+            .pointerInput(valueRange, fineFactor) {
+                val width = size.width.toFloat().coerceAtLeast(1f)
+                val inset = 14.dp.toPx()
+                val usable = (width - inset * 2f).coerceAtLeast(1f)
+                fun valueAt(x: Float): Float =
+                    valueRange.start +
+                        ((x - inset) / usable).coerceIn(0f, 1f) * range
+
+                val longPressTimeout = viewConfiguration.longPressTimeoutMillis
+                val touchSlop = viewConfiguration.touchSlop
+
+                awaitEachGesture {
+                    try {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        var lastX = down.position.x
+                        var moved = false
+                        var ended = false
+                        var canceled = false
+
+                        val longPressExpired = withTimeoutOrNull(longPressTimeout) {
+                            var finished = false
+                            while (!finished) {
+                                val event = awaitPointerEvent()
+                                val change = event.changes.firstOrNull { it.id == down.id }
+                                if (change == null) {
+                                    canceled = true
+                                    finished = true
+                                    continue
+                                }
+                                if (change.isConsumed) {
+                                    canceled = true
+                                    finished = true
+                                } else if (change.changedToUp()) {
+                                    ended = true
+                                    finished = true
+                                } else if (abs(change.position.x - down.position.x) > touchSlop) {
+                                    moved = true
+                                    lastX = change.position.x
+                                    finished = true
+                                }
+                            }
+                            false
+                        } == null
+
+                        if (longPressExpired && !canceled) {
+                            fine = true
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+
+                        if (!ended && !canceled) {
+                            if (moved && !fine) {
+                                currentOnValueChange(valueAt(lastX))
+                            }
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val change = event.changes
+                                    .firstOrNull { it.id == down.id } ?: break
+                                if (change.changedToUp() || change.isConsumed) {
+                                    change.consume()
+                                    break
+                                }
+                                val dx = change.position.x - lastX
+                                lastX = change.position.x
+                                if (fine) {
+                                    val next = (currentValue +
+                                        dx / usable * range * fineFactor)
+                                        .coerceIn(valueRange.start, valueRange.endInclusive)
+                                    currentOnValueChange(next)
+                                } else {
+                                    currentOnValueChange(valueAt(change.position.x))
+                                }
+                                change.consume()
+                            }
+                        } else if (ended && !moved && !canceled) {
+                            currentOnValueChange(valueAt(down.position.x))
+                        }
+                    } finally {
+                        fine = false
+                    }
+                }
+            }
+    ) {
+        val centerY = size.height / 2f
+        val inset = 14.dp.toPx()
+        val usable = (size.width - inset * 2f).coerceAtLeast(1f)
+        val fraction = ((value - valueRange.start) / range).coerceIn(0f, 1f)
+        val thumbX = inset + fraction * usable
+        val trackHeight = 8.dp.toPx()
+        val radius = 10.dp.toPx() * thumbScale
+        val corner = CornerRadius(trackHeight / 2f)
+
+        drawRoundRect(
+            color = inactiveColor,
+            topLeft = Offset(inset, centerY - trackHeight / 2f),
+            size = Size(usable, trackHeight),
+            cornerRadius = corner
+        )
+        drawRoundRect(
+            color = activeColor,
+            topLeft = Offset(inset, centerY - trackHeight / 2f),
+            size = Size((thumbX - inset).coerceAtLeast(0f), trackHeight),
+            cornerRadius = corner
+        )
+        if (fine) {
+            drawCircle(
+                color = activeColor.copy(alpha = 0.18f),
+                radius = radius * 1.7f,
+                center = Offset(thumbX, centerY)
+            )
+        }
+        drawCircle(
+            color = activeColor,
+            radius = radius,
+            center = Offset(thumbX, centerY)
+        )
+    }
 }
 
 @Composable
 private fun CustomBandCard(
     index: Int,
     band: Protocol.EqBand,
+    peakingOnly: Boolean = false,
     onChange: (Protocol.EqBand) -> Unit,
     onRemove: () -> Unit
 ) {
@@ -1009,22 +1178,21 @@ private fun CustomBandCard(
             }
 
             Text("Gain  %+.1f dB".format(band.gainDb), style = MaterialTheme.typography.bodyMedium)
-            Slider(
+            FineTuneSlider(
                 value = band.gainDb,
                 onValueChange = { onChange(band.copy(gainDb = it)) },
-                valueRange = -12f..12f,
-                steps = 47
+                valueRange = -12f..12f
             )
 
             Text("Frequency  ${formatHz(band.freq)}", style = MaterialTheme.typography.bodyMedium)
-            Slider(
+            FineTuneSlider(
                 value = freqToSlider(band.freq),
                 onValueChange = { onChange(band.copy(freq = sliderToFreq(it))) },
                 valueRange = 0f..1f
             )
 
             Text("Q  %.2f".format(band.q), style = MaterialTheme.typography.bodyMedium)
-            Slider(
+            FineTuneSlider(
                 value = band.q,
                 onValueChange = { onChange(band.copy(q = it)) },
                 valueRange = 0.3f..5f
@@ -1034,7 +1202,12 @@ private fun CustomBandCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Protocol.EqFilterType.entries.forEach { type ->
+                val types = if (peakingOnly) {
+                    listOf(Protocol.EqFilterType.PEAKING)
+                } else {
+                    Protocol.EqFilterType.entries
+                }
+                types.forEach { type ->
                     FilterChip(
                         selected = band.bandType == type.wireValue,
                         onClick = { onChange(band.copy(bandType = type.wireValue)) },

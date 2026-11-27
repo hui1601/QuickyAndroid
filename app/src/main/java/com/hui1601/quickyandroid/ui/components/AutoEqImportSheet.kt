@@ -264,7 +264,7 @@ private fun BrowseMode(
         }
         query.isBlank() -> Text(
             text = "Search 6,000+ measured profiles, then import one into the " +
-                "parametric editor. Nothing is sent to the earbuds until you tap Apply.",
+                "parametric editor, which applies it automatically 0.5 s after import.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

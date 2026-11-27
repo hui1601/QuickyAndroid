@@ -30,7 +30,7 @@ Captured on an Android 36 emulator with the bundled **QCY MeloBuds Pro** catalog
   - `JL` / `JL_NEW` — JieLi chips via RCSP tunnel
   - `ZR` — Zhurui family
   - `WUQI` — runtime fallback for devices exposing only service `0x7033`
-- **Device dashboard** — feature availability is derived from a bundled per-product catalog (`app/src/main/assets/android_products.json`, ~199 products with images):
+- **Device dashboard** — feature availability is derived from a bundled per-product catalog (`app/src/main/assets/android_products.json`, 248 products merged from the legacy QCY app and QCY Audio, with bundled images):
   - Noise Control (ANC modes)
   - Equalizer (presets + custom multi-band, e.g. 10-band)
   - **Custom Parametric EQ** — up to 20 bands with arbitrary frequency,
@@ -39,11 +39,22 @@ Captured on an Android 36 emulator with the bundled **QCY MeloBuds Pro** catalog
     custom preset type. The firmware accepts far more than the fixed
     presets the retail app ships (firmware “custom-band unlock”,
     `catalog/EQ_PROTOCOL.md`); the section appears for standard-protocol
-    connections and can read the live curve back (`0xFE 0x22`).
+    connections and can read the live curve back (`0xFE 0x22`). Advanced
+    sliders have a fine-tune mode: press and hold, the thumb grows and drag
+    sensitivity drops to one fifth. The graph is selection-only and shows a
+    faint dashed preview of the summed response (all bands plus pre-gain)
+    that Apply will send.
+  - **QCY H4 / BES2300P EQ** — the H4 0.9.2 firmware ignores preset IDs and
+    accepts a 125-byte `SET_EQ_SETTING` (`0x20`) packet with explicit
+    frequency/gain/Q bands. The Simple sliders write the firmware's flat
+    10-band template (31 Hz–16 kHz) and the Advanced read-back parses the
+    127-byte `GET_EQ_SETTING` response. The H4 applies every band as a
+    peaking filter, so its editor is peaking-only.
   - **AutoEQ import** — search the AutoEQ result index or paste a
     `ParametricEQ.txt` profile/URL into the Advanced editor. AutoEQ's
     high-shelf filters become broad peaking bands because the firmware has
-    no high-shelf type; nothing is written until *Apply to device*.
+    no high-shelf type; the editor applies the profile automatically 0.5 s
+    after import.
   - Game Mode, Spatial Audio, LDAC, Adaptive EQ, Env Adaptation, Focus/Sleep Mode
   - Per-bud volume (L/R), LED indicator, LED effects
   - Wearing detection, Ear Tip Fit test
