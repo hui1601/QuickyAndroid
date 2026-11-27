@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -92,7 +91,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -104,7 +102,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -113,15 +110,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.activity.compose.BackHandler
-import androidx.palette.graphics.Palette
-import coil3.BitmapImage
 import coil3.compose.AsyncImage
-import coil3.imageLoader
 import coil3.request.ImageRequest
-import coil3.request.allowHardware
 import coil3.request.crossfade
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import com.hui1601.quickyandroid.data.model.BatteryStatus
 import com.hui1601.quickyandroid.data.model.ConnectionState
 import com.hui1601.quickyandroid.data.model.DeviceSettings
@@ -334,8 +325,6 @@ private fun DashboardContent(
             if (isConnected || !settings.battery.isEmpty()) {
                 BatterySection(
                     battery = settings.battery,
-                    imageUrl = product?.leftImgUrl?.ifBlank { null }
-                        ?: product?.rightImgUrl?.ifBlank { null },
                     isHeadset = product?.isHeadset() == true
                 )
             }
@@ -676,44 +665,16 @@ private fun ProductImage(
 }
 
 @Composable
-private fun BatterySection(battery: BatteryStatus, imageUrl: String?, isHeadset: Boolean) {
-    val context = LocalContext.current
-    val heroTint by produceState<Color?>(initialValue = null, imageUrl) {
-        value = null
-        if (imageUrl == null) return@produceState
-        val bitmap = runCatching {
-            val request = ImageRequest.Builder(context)
-                .data(imageUrl)
-                .allowHardware(false)
-                .size(128, 128)
-                .build()
-            (context.imageLoader.execute(request).image as? BitmapImage)?.bitmap
-        }.getOrNull()
-        value = bitmap?.let { bmp ->
-            withContext(Dispatchers.Default) {
-                Palette.from(bmp).generate().dominantSwatch?.rgb?.let(::Color)
-            }
-        }
-    }
-    // Blend the extracted tint toward primaryContainer (55/45); all hero
-    // content is drawn in the onPrimaryContainer family, the role paired
-    // with primaryContainer for guaranteed contrast in both schemes.
-    val heroContainer = heroTint?.let {
-        lerp(MaterialTheme.colorScheme.primaryContainer, it, 0.45f)
-    } ?: MaterialTheme.colorScheme.primaryContainer
-    val animatedHeroContainer by animateColorAsState(
-        targetValue = heroContainer,
-        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-        label = "heroContainer"
-    )
-
+private fun BatterySection(battery: BatteryStatus, isHeadset: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = MaterialTheme.shapes.largeIncreased,
         colors = CardDefaults.cardColors(
-            containerColor = animatedHeroContainer
+            // Neutral surface roles keep the levels legible in every palette;
+            // the old product-image tint produced muddy dark yellow cards.
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
     ) {
         Row(
@@ -772,22 +733,22 @@ private fun BatteryBar(level: Int, charging: Boolean, label: String) {
             modifier = Modifier
                 .width(64.dp)
                 .height(6.dp),
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
             drawStopIndicator = {}
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = "$level%",
             style = MaterialTheme.typography.titleLargeEmphasized.tabular(),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(2.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (charging) {
                 Spacer(modifier = Modifier.width(2.dp))
@@ -795,7 +756,7 @@ private fun BatteryBar(level: Int, charging: Boolean, label: String) {
                     imageVector = Icons.Default.ElectricBolt,
                     contentDescription = "Charging",
                     modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
