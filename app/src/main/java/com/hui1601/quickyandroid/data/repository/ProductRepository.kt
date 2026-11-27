@@ -29,11 +29,11 @@ class ProductRepository(context: Context) {
                     val animZip = product.animationImgZip.ifBlank { defaultColor?.animationImgZip ?: "" }
 
                     map[key] = product.copy(
-                        iconUrl = rewriteUrl(iconUrl),
-                        leftImgUrl = rewriteUrl(leftImgUrl),
-                        rightImgUrl = rewriteUrl(rightImgUrl),
-                        boxImgUrl = rewriteUrl(boxImgUrl),
-                        animationImgZip = rewriteUrl(animZip)
+                        iconUrl = resolveUrl(context, iconUrl),
+                        leftImgUrl = resolveUrl(context, leftImgUrl),
+                        rightImgUrl = resolveUrl(context, rightImgUrl),
+                        boxImgUrl = resolveUrl(context, boxImgUrl),
+                        animationImgZip = resolveUrl(context, animZip)
                     )
                 } catch (_: Exception) {
                     // skip malformed entries
@@ -53,7 +53,31 @@ class ProductRepository(context: Context) {
 
     fun count(): Int = database.size
 
+    /** Use the bundled copy when it exists, otherwise keep the remote URL so
+     * new catalog entries still load from the CDN. */
+    private fun resolveUrl(context: Context, originalUrl: String): String =
+        resolveAssetUrl(originalUrl) { assetPath ->
+            try {
+                context.assets.open(assetPath).use { }
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+
     companion object {
+        private const val ASSET_PREFIX = "file:///android_asset/"
+
+        internal fun resolveAssetUrl(
+            originalUrl: String,
+            hasAsset: (String) -> Boolean
+        ): String {
+            val rewritten = rewriteUrl(originalUrl)
+            if (!rewritten.startsWith(ASSET_PREFIX)) return rewritten
+            val assetPath = rewritten.removePrefix(ASSET_PREFIX)
+            return if (hasAsset(assetPath)) rewritten else originalUrl
+        }
+
         /**
          * Rewrite remote HTTP image URLs to local bundled asset paths.
          * Falls back to the original URL if the local asset doesn't exist.

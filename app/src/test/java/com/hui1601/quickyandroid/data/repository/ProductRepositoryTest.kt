@@ -3,10 +3,12 @@ package com.hui1601.quickyandroid.data.repository
 import com.hui1601.quickyandroid.data.model.ProductMetadata
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 /**
  * Unit tests for the pure parts of [ProductRepository]:
@@ -88,6 +90,31 @@ class ProductRepositoryTest {
         assertEquals("https://example.com/", ProductRepository.rewriteUrl("https://example.com/"))
     }
 
+    // ── resolveAssetUrl (bundled asset fallback) ──────────────────────
+
+    @Test
+    fun `resolveAssetUrl uses the bundled path when the asset exists`() {
+        assertEquals(
+            "file:///android_asset/product_images/foo.png",
+            ProductRepository.resolveAssetUrl("https://example.com/foo.png") { true }
+        )
+    }
+
+    @Test
+    fun `resolveAssetUrl keeps the remote url when the asset is missing`() {
+        assertEquals(
+            "https://example.com/foo.png",
+            ProductRepository.resolveAssetUrl("https://example.com/foo.png") { false }
+        )
+    }
+
+    @Test
+    fun `resolveAssetUrl leaves local and non-http values untouched`() {
+        val local = "file:///android_asset/product_images/foo.png"
+        assertEquals(local, ProductRepository.resolveAssetUrl(local) { false })
+        assertEquals("icon.png", ProductRepository.resolveAssetUrl("icon.png") { false })
+    }
+
     // ── ProductMetadata decoding (mirrors loadDatabase's decode step) ──
 
     @Test
@@ -164,5 +191,26 @@ class ProductRepositoryTest {
             ProductMetadata.serializer(),
             """{"vendorId": {"nested": true}, "title": "Wrong type"}"""
         )
+    }
+
+    @Test
+    fun `bundled catalog decodes every entry and exposes new H6 features`() {
+        val catalog = listOf(
+            File("src/main/assets/android_products.json"),
+            File("app/src/main/assets/android_products.json")
+        ).firstOrNull { it.isFile } ?: error("bundled catalog not found")
+
+        val decoded = json.parseToJsonElement(catalog.readText())
+            .jsonObject
+            .mapValues { (_, value) ->
+                json.decodeFromJsonElement(ProductMetadata.serializer(), value)
+            }
+
+        assertEquals(248, decoded.size)
+        val h6 = decoded.getValue("33136")
+        assertEquals("QCY H6 Ultra", h6.title)
+        assertTrue(h6.features?.anc?.modes?.isNotEmpty() == true)
+        assertTrue(h6.features?.eq?.presets?.isNotEmpty() == true)
+        assertTrue(h6.leftImgUrl.startsWith("file:///android_asset/product_images/"))
     }
 }
